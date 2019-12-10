@@ -31,13 +31,17 @@ export type PendingInteractionMap = Map<ExpirationTime, Set<Interaction>>;
 
 type BaseFiberRootProperties = {|
   // The type of root (legacy, batched, concurrent, etc.)
+  // root的类型（遗弃的，批量的，同时的，等等）
   tag: RootTag,
 
   // Any additional information from the host associated with this root.
+  // root节点，render方法接收的第二个参数
   containerInfo: any,
   // Used only by persistent updates.
+  // 只有在持久更新中会用到，也就是不支持增量更新的平台，react-dom不会用到
   pendingChildren: any,
   // The currently active root fiber. This is the mutable root of the tree.
+  // 当前应用对应的Fiber对象，是Root Fiber
   current: Fiber,
 
   pingCache:
