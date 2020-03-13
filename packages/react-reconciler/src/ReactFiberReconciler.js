@@ -234,7 +234,9 @@ export function updateContainer(
   if (__DEV__) {
     onScheduleRoot(container, element);
   }
+  // current 在ReactFiberRoot.js -> createFiberRoot ->  createHostRootFiber(tag)生成
   const current = container.current;
+  // 记录当前时间
   const currentTime = requestCurrentTimeForUpdate();
   if (__DEV__) {
     // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
@@ -243,6 +245,7 @@ export function updateContainer(
       warnIfNotScopedWithMatchingAct(current);
     }
   }
+  // TODO: 暂时不知道作用
   const suspenseConfig = requestCurrentSuspenseConfig();
   const expirationTime = computeExpirationForFiber(
     currentTime,
@@ -250,6 +253,7 @@ export function updateContainer(
     suspenseConfig,
   );
 
+  //由于parentComponent为null,所以返回空对象{}
   const context = getContextForSubtree(parentComponent);
   if (container.context === null) {
     container.context = context;
@@ -274,6 +278,7 @@ export function updateContainer(
     }
   }
 
+  // 创建一个update链表？
   const update = createUpdate(expirationTime, suspenseConfig);
   // Caution: React DevTools currently depends on this property
   // being called "element".
@@ -293,7 +298,9 @@ export function updateContainer(
     update.callback = callback;
   }
 
+  // 向队列中增加更新
   enqueueUpdate(current, update);
+  // 进入任务调度
   scheduleWork(current, expirationTime);
 
   return expirationTime;

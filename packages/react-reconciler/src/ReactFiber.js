@@ -347,11 +347,14 @@ function FiberNode(
 
 // This is a constructor function, rather than a POJO constructor, still
 // please ensure we do the following:
+// 这是一个构造函数，而不是POJO构造函数，仍然请确保我们执行以下操作
 // 1) Nobody should add any instance methods on this. Instance methods can be
 //    more difficult to predict when they get optimized and they are almost
 //    never inlined properly in static compilers.
+// 没人应该为此添加任何实例方法。实例方法在进行优化时可能更难预测，并且几乎永远不会在静态编译器中正确内联。
 // 2) Nobody should rely on `instanceof Fiber` for type testing. We should
 //    always know when it is a fiber.
+// 没有人应该依靠`instanceof Fiber`进行类型测试。我们应该始终知道它何时是纤维。
 // 3) We might want to experiment with using numeric keys since they are easier
 //    to optimize in a non-JIT environment.
 // 4) We can easily go from a constructor to a createFiber object literal if that
@@ -367,6 +370,7 @@ const createFiber = function(
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors
   return new FiberNode(tag, pendingProps, key, mode);
 };
+
 
 function shouldConstruct(Component: Function) {
   const prototype = Component.prototype;

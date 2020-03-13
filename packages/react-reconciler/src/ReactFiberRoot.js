@@ -108,9 +108,9 @@ export type FiberRoot = {
 };
 
 function FiberRootNode(containerInfo, tag, hydrate) {
-  this.tag = tag;
+  this.tag = tag;// LegacyRoot
   this.current = null;
-  this.containerInfo = containerInfo;
+  this.containerInfo = containerInfo; // root节点，render方法接收的第二个参数
   this.pendingChildren = null;
   this.pingCache = null;
   this.finishedExpirationTime = NoWork;
@@ -144,6 +144,7 @@ export function createFiberRoot(
   hydrate: boolean,
   hydrationCallbacks: null | SuspenseHydrationCallbacks,
 ): FiberRoot {
+  // 创建Fiber的根节点
   const root: FiberRoot = (new FiberRootNode(containerInfo, tag, hydrate): any);
   if (enableSuspenseCallback) {
     root.hydrationCallbacks = hydrationCallbacks;
@@ -151,10 +152,13 @@ export function createFiberRoot(
 
   // Cyclic construction. This cheats the type system right now because
   // stateNode is any.
+  // 循环构造。因为stateNode是any，所以这会立即欺骗"类型系统"。
   const uninitializedFiber = createHostRootFiber(tag);
+  // 根节点的current属性为uninitializedFiber
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
 
+  // 初始化更新队列
   initializeUpdateQueue(uninitializedFiber);
 
   return root;

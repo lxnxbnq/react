@@ -116,11 +116,16 @@ function createRootImpl(
   options: void | RootOptions,
 ) {
   // Tag is either LegacyRoot or Concurrent Root
+  // Tag是LegacyRoot(0)或Concurrent(2) Root
   const hydrate = options != null && options.hydrate === true;
   const hydrationCallbacks =
     (options != null && options.hydrationOptions) || null;
+    // 1. 创建Fiber根节点
+    // 2. 初始化更新队列
   const root = createContainer(container, tag, hydrate, hydrationCallbacks);
+  // 给根节点增加标记
   markContainerAsRoot(root.current, container);
+  // 首次tag为LegacyRoot，所以不会进入下面逻辑
   if (hydrate && tag !== LegacyRoot) {
     const doc =
       container.nodeType === DOCUMENT_NODE
@@ -159,6 +164,7 @@ export function createLegacyRoot(
   container: Container,
   options?: RootOptions,
 ): RootType {
+  // 实例化一个包含_internalRoot属性的对象，_internalRoot则是Fiber节点
   return new ReactDOMBlockingRoot(container, LegacyRoot, options);
 }
 

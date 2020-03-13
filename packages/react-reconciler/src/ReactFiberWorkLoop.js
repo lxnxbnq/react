@@ -381,6 +381,7 @@ export function computeExpirationForFiber(
   return expirationTime;
 }
 
+// fiber上的调度更新
 export function scheduleUpdateOnFiber(
   fiber: Fiber,
   expirationTime: ExpirationTime,
@@ -388,6 +389,8 @@ export function scheduleUpdateOnFiber(
   checkForNestedUpdates();
   warnAboutRenderPhaseUpdatesInDEV(fiber);
 
+  // 从fiber到Root标记更新时间
+  // TODO: 本次开始
   const root = markUpdateTimeFromFiberToRoot(fiber, expirationTime);
   if (root === null) {
     warnAboutUpdateOnUnmountedFiberInDEV(fiber);
@@ -455,10 +458,13 @@ export const scheduleWork = scheduleUpdateOnFiber;
 
 // This is split into a separate function so we can mark a fiber with pending
 // work without treating it as a typical update that originates from an event;
+// 这被拆分为一个单独的函数，因此我们可以将待处理的工作标记为fiber，而无需将其视为源自事件的典型更新。
 // e.g. retrying a Suspense boundary isn't an update, but it does schedule work
 // on a fiber.
+// 例如重试暂挂边界不是一个更新，但可以在fiber上安排工作。
 function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
   // Update the source fiber's expiration time
+  // 更新源fiber的到期时间
   if (fiber.expirationTime < expirationTime) {
     fiber.expirationTime = expirationTime;
   }
@@ -467,6 +473,7 @@ function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
     alternate.expirationTime = expirationTime;
   }
   // Walk the parent path to the root and update the child expiration time.
+  // 将父路径遍历到根并更新子项的到期时间。
   let node = fiber.return;
   let root = null;
   if (node === null && fiber.tag === HostRoot) {

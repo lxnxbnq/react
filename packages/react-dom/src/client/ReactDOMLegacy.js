@@ -114,9 +114,11 @@ function legacyCreateRootFromDOMContainer(
   container: Container,
   forceHydrate: boolean,
 ): RootType {
+  //render的forceHydrate是false，所以会调用shouldHydrateDueToLegacyHeuristic方法来判断是否是服务端渲染
   const shouldHydrate =
     forceHydrate || shouldHydrateDueToLegacyHeuristic(container);
   // First clear any existing content.
+  // 首次渲染，清空所有内容
   if (!shouldHydrate) {
     let warned = false;
     let rootSibling;
@@ -190,6 +192,8 @@ function legacyRenderSubtreeIntoContainer(
   let fiberRoot;
   if (!root) {
     // Initial mount
+    // 创建一个fiber根节点，并标记私有属性_reactRootContainer
+    // 初始化updateQueue
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
       forceHydrate,
