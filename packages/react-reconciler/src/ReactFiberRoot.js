@@ -154,7 +154,7 @@ export function createFiberRoot(
   // stateNode is any.
   // 循环构造。因为stateNode是any，所以这会立即欺骗"类型系统"。
   const uninitializedFiber = createHostRootFiber(tag);
-  // 根节点的current属性为uninitializedFiber
+  // 互相引用
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
 

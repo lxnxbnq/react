@@ -301,14 +301,18 @@ let currentEventTime: ExpirationTime = NoWork;
 export function requestCurrentTimeForUpdate() {
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // We're inside React, so it's fine to read the actual time.
+    // 在react中
     return msToExpirationTime(now());
   }
   // We're not inside React, so we may be in the middle of a browser event.
+  // 不在react中。有可能在浏览器事件中
   if (currentEventTime !== NoWork) {
     // Use the same start time for all updates until we enter React again.
+    // 对所有更新使用相同的开始时间，直到我们再次输入React。
     return currentEventTime;
   }
   // This is the first update since React yielded. Compute a new start time.
+  // 在react产生后的首次更新，计算一个新的开始时间
   currentEventTime = msToExpirationTime(now());
   return currentEventTime;
 }
@@ -322,11 +326,12 @@ export function computeExpirationForFiber(
   fiber: Fiber,
   suspenseConfig: null | SuspenseConfig,
 ): ExpirationTime {
+  // mode首次为LegacyNode
   const mode = fiber.mode;
   if ((mode & BlockingMode) === NoMode) {
     return Sync;
   }
-
+  // 获取当前优先级，默认为3，在scheduler/src/SchedulerPriorites.js中
   const priorityLevel = getCurrentPriorityLevel();
   if ((mode & ConcurrentMode) === NoMode) {
     return priorityLevel === ImmediatePriority ? Sync : Batched;
@@ -386,17 +391,19 @@ export function scheduleUpdateOnFiber(
   fiber: Fiber,
   expirationTime: ExpirationTime,
 ) {
+  //判断是否是无限循环update
   checkForNestedUpdates();
+  //测试环境用的，不看
   warnAboutRenderPhaseUpdatesInDEV(fiber);
-
+  // TODO: 节点
   // 从fiber到Root标记更新时间
-  // TODO: 本次开始
   const root = markUpdateTimeFromFiberToRoot(fiber, expirationTime);
   if (root === null) {
     warnAboutUpdateOnUnmountedFiberInDEV(fiber);
     return;
   }
 
+  //判断是否有高优先级任务打断当前正在执行的任务
   checkForInterruption(fiber, expirationTime);
   recordScheduleUpdate();
 
@@ -404,11 +411,18 @@ export function scheduleUpdateOnFiber(
   // priority as an argument to that function and this one.
   const priorityLevel = getCurrentPriorityLevel();
 
+  //1073741823
+  //如果expirationTime等于最大整型值的话
+  //如果是同步任务的过期时间的话
   if (expirationTime === Sync) {
+    // 如果还未渲染，update是未分批次的，
+    // 首次渲染前
     if (
       // Check if we're inside unbatchedUpdates
+      // 检查我们是否在未批处理的更新内
       (executionContext & LegacyUnbatchedContext) !== NoContext &&
       // Check if we're not already rendering
+      // 检查我们是否尚未渲染
       (executionContext & (RenderContext | CommitContext)) === NoContext
     ) {
       // Register pending interactions on the root to avoid losing traced interaction data.
@@ -421,12 +435,18 @@ export function scheduleUpdateOnFiber(
     } else {
       ensureRootIsScheduled(root);
       schedulePendingInteractions(root, expirationTime);
+      // 当前没有update时
       if (executionContext === NoContext) {
         // Flush the synchronous work now, unless we're already working or inside
         // a batch. This is intentionally inside scheduleUpdateOnFiber instead of
         // scheduleCallbackForFiber to preserve the ability to schedule a callback
         // without immediately flushing it. We only do this for user-initiated
         // updates, to preserve historical behavior of legacy mode.
+        // 立即清除同步工作，除非我们已经在工作或在批处理中。
+        // 故意将其放在scheduleUpdateOnFiber而不是scheduleCallbackForFiber内，以保留调度回调而不立即刷新它的能力
+        // 我们仅对用户启动的更新执行此操作，以保留旧版模式的历史行为。
+
+        // 刷新同步任务队列
         flushSyncCallbackQueue();
       }
     }
@@ -439,6 +459,7 @@ export function scheduleUpdateOnFiber(
     (executionContext & DiscreteEventContext) !== NoContext &&
     // Only updates at user-blocking priority or greater are considered
     // discrete, even inside a discrete event.
+    // 只有在用户阻止优先级或更高优先级的更新才被视为离散，即使在离散事件中也是如此
     (priorityLevel === UserBlockingPriority ||
       priorityLevel === ImmediatePriority)
   ) {
@@ -572,6 +593,9 @@ function getNextRootExpirationTimeToWorkOn(root: FiberRoot): ExpirationTime {
 // expiration time of the existing task is the same as the expiration time of
 // the next level that the root has work on. This function is called on every
 // update, and right before exiting a task.
+
+// 使用这个函数为root增加一个调度任务。每个root只有一个任务。如果一个任务准备好被调度，
+// 我们将检查以确保现有任务的到期时间与根已处理的下一级别的到期时间相同。每次更新时都会调用此函数，并且在退出任务之前
 function ensureRootIsScheduled(root: FiberRoot) {
   const lastExpiredTime = root.lastExpiredTime;
   if (lastExpiredTime !== NoWork) {
@@ -2716,6 +2740,10 @@ function computeMsUntilSuspenseLoadingDelay(
 }
 
 function checkForNestedUpdates() {
+  // 当超过50层的嵌套update，就终止调度
+  // 常见于：
+  // 1. 在render()中无条件调用setState() （有条件则可以在render中调用setState）
+  // 2. 在shouldComponentUpdate()和componentWillUpdate()中调用setState()， 会导致this._pendingStateQueue != null，需要进入队列更新，然后调用performUpdateIfNecessary，进而造成死循环
   if (nestedUpdateCount > NESTED_UPDATE_LIMIT) {
     nestedUpdateCount = 0;
     rootWithNestedUpdates = null;

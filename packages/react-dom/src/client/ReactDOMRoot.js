@@ -120,8 +120,12 @@ function createRootImpl(
   const hydrate = options != null && options.hydrate === true;
   const hydrationCallbacks =
     (options != null && options.hydrationOptions) || null;
-    // 1. 创建Fiber根节点
+    // 1. 创建Fiber节点（FiberRootNode、FiberNode）
     // 2. 初始化更新队列
+    //  root为ReactRoot实例，
+    //  root._internalRoot 即为fiberRoot实例，
+    //  root._internalRoot.current即为Fiber实例，
+    //  root._internalRoot.current.stateNode = root._internalRoot
   const root = createContainer(container, tag, hydrate, hydrationCallbacks);
   // 给根节点增加标记
   markContainerAsRoot(root.current, container);

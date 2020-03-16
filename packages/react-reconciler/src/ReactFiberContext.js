@@ -203,6 +203,7 @@ function processChildContext(
     }
 
     let childContext;
+    // 开始时期定时器
     startPhaseTimer(fiber, 'getChildContext');
     childContext = instance.getChildContext();
     stopPhaseTimer();

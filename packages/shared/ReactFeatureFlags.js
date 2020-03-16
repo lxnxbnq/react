@@ -119,6 +119,7 @@ export const disableInputAttributeSyncing = false;
 
 export const warnAboutStringRefs = false;
 
+// 是否禁用context上下文
 export const disableLegacyContext = false;
 
 // Disables children for <textarea> elements

@@ -273,20 +273,24 @@ function FiberNode(
   this.stateNode = null;
 
   // Fiber
-  this.return = null;
+  this.return = null; // return fiber是程序处理当前fiber应该返回的fiber。从概念上讲，它与堆栈帧的返回地址相同。也可以将其视为parent fiber。
+
+  // child和sibling 这些字段指向其他的fiber，用来描述fiber的递归树结构。
   this.child = null;
   this.sibling = null;
   this.index = 0;
 
   this.ref = null;
 
+  // 从概念上说，props是函数的参数。一个fiber的pendingProps在开始执行时设置，memoizedProps在结束时设置
+  // 当传入pendingProps等于memoizedProps，它示意之前的输出可以重用，预防不必要的工作。
   this.pendingProps = pendingProps;
   this.memoizedProps = null;
   this.updateQueue = null;
   this.memoizedState = null;
   this.dependencies = null;
 
-  this.mode = mode;
+  this.mode = mode; // mode表示同步或者异步
 
   // Effects
   this.effectTag = NoEffect;
@@ -302,6 +306,7 @@ function FiberNode(
 
   if (enableProfilerTimer) {
     // Note: The following is done to avoid a v8 performance cliff.
+    // 为了避免v8性能下降，请执行以下操作
     //
     // Initializing the fields below to smis and later updating them with
     // double values will cause Fibers to end up having separate shapes.
@@ -597,7 +602,7 @@ export function resetWorkInProgress(
 }
 
 export function createHostRootFiber(tag: RootTag): Fiber {
-  let mode;
+  let mode; // false表示同步，true异步
   if (tag === ConcurrentRoot) {
     mode = ConcurrentMode | BlockingMode | StrictMode;
   } else if (tag === BlockingRoot) {

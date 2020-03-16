@@ -127,8 +127,10 @@ function getContextForSubtree(
   }
 
   const fiber = getInstance(parentComponent);
+  // 获取当前未伪装的Context
   const parentContext = findCurrentUnmaskedContext(fiber);
 
+  // 判断是否是Class组件
   if (fiber.tag === ClassComponent) {
     const Component = fiber.type;
     if (isLegacyContextProvider(Component)) {
@@ -215,7 +217,7 @@ function findHostInstanceWithWarning(
   }
   return findHostInstance(component);
 }
-
+// 创建fiber节点 包含FiberRootNode 以及FiberNode
 export function createContainer(
   containerInfo: Container,
   tag: RootTag,
@@ -247,13 +249,15 @@ export function updateContainer(
   }
   // TODO: 暂时不知道作用
   const suspenseConfig = requestCurrentSuspenseConfig();
+  // expirationTime 代表优先级，数字越大优先级越高
+  // Sync 的数字是最大的，所以优先级也是最高的(首次渲染返回值是Sync)
   const expirationTime = computeExpirationForFiber(
     currentTime,
     current,
     suspenseConfig,
   );
 
-  //由于parentComponent为null,所以返回空对象{}
+  //由于parentComponent首次为null，返回一个被冻结的空对象。后续如果有context，会获取
   const context = getContextForSubtree(parentComponent);
   if (container.context === null) {
     container.context = context;
@@ -282,6 +286,7 @@ export function updateContainer(
   const update = createUpdate(expirationTime, suspenseConfig);
   // Caution: React DevTools currently depends on this property
   // being called "element".
+  // 警告： React DevTools当前依靠此属性
   update.payload = {element};
 
   callback = callback === undefined ? null : callback;
