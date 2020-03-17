@@ -2876,6 +2876,7 @@ function beginWork(
   workInProgress: Fiber,
   renderExpirationTime: ExpirationTime,
 ): Fiber | null {
+  // 当前正在进行的fiber的expirationTime
   const updateExpirationTime = workInProgress.expirationTime;
 
   if (__DEV__) {
@@ -2908,12 +2909,15 @@ function beginWork(
     ) {
       // If props or context changed, mark the fiber as having performed work.
       // This may be unset if the props are determined to be equal later (memo).
+      // 如果props或context发生变化，则将fiber标记为已完成工作。 如果确定这些props以后相等（备忘），则可以不设置此设置。
+      // 开发环境中有用
       didReceiveUpdate = true;
     } else if (updateExpirationTime < renderExpirationTime) {
       didReceiveUpdate = false;
       // This fiber does not have any pending work. Bailout without entering
       // the begin phase. There's still some bookkeeping we that needs to be done
       // in this optimized path, mostly pushing stuff onto the stack.
+      // 该fiber没有任何待处理的工作。 无需进入开始阶段即可进行救助。 在这种优化路径下，我们仍然需要做一些簿记工作，主要是将内容推入堆栈。
       switch (workInProgress.tag) {
         case HostRoot:
           pushHostRootContext(workInProgress);
@@ -3089,6 +3093,9 @@ function beginWork(
       // nor legacy context. Set this to false. If an update queue or context
       // consumer produces a changed value, it will set this to true. Otherwise,
       // the component will assume the children have not changed and bail out.
+      // 已计划在此fiber上进行更新，但没有新的props也没有旧的context。 设置为false。 
+      // 如果更新队列或context consumer产生了更改的值，则将其设置为true。 否则，组件将假定子代未更改并退出。
+      // 首次会到这
       didReceiveUpdate = false;
     }
   } else {

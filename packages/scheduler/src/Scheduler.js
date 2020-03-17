@@ -391,6 +391,7 @@ function unstable_cancelCallback(task) {
   task.callback = null;
 }
 
+//当前调度优先级默认为 NormalPriority
 function unstable_getCurrentPriorityLevel() {
   return currentPriorityLevel;
 }

@@ -634,7 +634,7 @@ function cutOffTailIfNeeded(
 }
 
 function completeWork(
-  current: Fiber | null,
+current: Fiber | null,
   workInProgress: Fiber,
   renderExpirationTime: ExpirationTime,
 ): Fiber | null {
@@ -653,6 +653,7 @@ function completeWork(
     case MemoComponent:
       return null;
     case ClassComponent: {
+      // 类组件
       const Component = workInProgress.type;
       if (isLegacyContextProvider(Component)) {
         popLegacyContext(workInProgress);
@@ -660,6 +661,7 @@ function completeWork(
       return null;
     }
     case HostRoot: {
+      // 宿主根节点
       popHostContainer(workInProgress);
       popTopLevelLegacyContextObject(workInProgress);
       const fiberRoot = (workInProgress.stateNode: FiberRoot);

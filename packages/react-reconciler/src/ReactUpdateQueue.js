@@ -203,8 +203,14 @@ export function createUpdate(
 }
 
 export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
+  // updateQueue结构，element就是fiber
+  // {
+  //   baseState: {element: {…}}
+  //   baseQueue: null
+  //   shared: {pending: null}
+  //   effects: null
+  // }
   const updateQueue = fiber.updateQueue;
-  // mounted时为null
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.
     // 仅当fiber卸载时才会触发

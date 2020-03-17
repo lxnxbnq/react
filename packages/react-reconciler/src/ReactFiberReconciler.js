@@ -250,7 +250,7 @@ export function updateContainer(
   // TODO: 暂时不知道作用
   const suspenseConfig = requestCurrentSuspenseConfig();
   // expirationTime 代表优先级，数字越大优先级越高
-  // Sync 的数字是最大的，所以优先级也是最高的(首次渲染返回值是Sync)
+  // Sync 的数字是最大的，所以优先级也是最高的(首次渲染返回值是Sync 1073741823)
   const expirationTime = computeExpirationForFiber(
     currentTime,
     current,
@@ -282,7 +282,7 @@ export function updateContainer(
     }
   }
 
-  // 创建一个update链表？
+  // 创建一个update队列
   const update = createUpdate(expirationTime, suspenseConfig);
   // Caution: React DevTools currently depends on this property
   // being called "element".

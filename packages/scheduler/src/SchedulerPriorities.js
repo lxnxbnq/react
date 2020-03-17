@@ -10,9 +10,9 @@
 export type PriorityLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 // TODO: Use symbols?
-export const NoPriority = 0;
-export const ImmediatePriority = 1;
-export const UserBlockingPriority = 2;
-export const NormalPriority = 3;
-export const LowPriority = 4;
-export const IdlePriority = 5;
+export const NoPriority = 0; // 文本框输入
+export const ImmediatePriority = 1; // 本次调度结束需完成的任务
+export const UserBlockingPriority = 2; // 动画过渡
+export const NormalPriority = 3; // 交互反馈 
+export const LowPriority = 4; // 数据更新 
+export const IdlePriority = 5; // 不会显示但以防将来会显示的任务

@@ -64,6 +64,7 @@ function pushHostContainer(fiber: Fiber, nextRootInstance: Container) {
 }
 
 function popHostContainer(fiber: Fiber) {
+  // 删除当前上下文的指针
   pop(contextStackCursor, fiber);
   pop(contextFiberStackCursor, fiber);
   pop(rootInstanceStackCursor, fiber);
