@@ -367,9 +367,9 @@ function FiberNode(
 // 5) It should be easy to port this to a C struct and keep a C implementation
 //    compatible.
 const createFiber = function(
-  tag: WorkTag,
-  pendingProps: mixed,
-  key: null | string,
+  tag: WorkTag, // HostRoot
+  pendingProps: mixed, // null
+  key: null | string, // null
   mode: TypeOfMode,
 ): Fiber {
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors

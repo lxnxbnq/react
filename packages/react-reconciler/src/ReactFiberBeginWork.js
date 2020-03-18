@@ -3103,12 +3103,16 @@ function beginWork(
   }
 
   // Before entering the begin phase, clear pending update priority.
+  // 在进入开始阶段之前，请清除挂起的更新优先级。
   // TODO: This assumes that we're about to evaluate the component and process
   // the update queue. However, there's an exception: SimpleMemoComponent
   // sometimes bails out later in the begin phase. This indicates that we should
   // move this assignment out of the common path and into each branch.
+  // 假设我们将要评估组件并处理更新队列。 但是，有一个例外：SimpleMemoComponent有时会在开始阶段的后期崩溃。 这表明我们应该将此分配移出公共路径并移至每个分支。
+  // 清除当前挂起的更新优先级
   workInProgress.expirationTime = NoWork;
 
+  // 根据组件类型实例化并且执行生命周期函数
   switch (workInProgress.tag) {
     case IndeterminateComponent: {
       return mountIndeterminateComponent(

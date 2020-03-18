@@ -436,6 +436,7 @@ export function scheduleUpdateOnFiber(
       // should be deferred until the end of the batch.
       // 这是一个遗留的边缘情况。在batchedUpdates内部的ReactDOM.render根的初始安装应该是同步的，
       // 但是布局更新应推迟到批处理结束。
+      // 执行root的同步工作
       performSyncWorkOnRoot(root);
     } else {
       ensureRootIsScheduled(root);
@@ -1024,7 +1025,7 @@ function performSyncWorkOnRoot(root) {
     expirationTime = Sync;
   }
 
-  // 同步更新FiberRoot
+  // 同步渲染FiberRoot,渲染完成后返回一个状态码，标记任务进行的状态
   let exitStatus = renderRootSync(root, expirationTime);
 
   // 当前fiber为FiberRootNode且fiberWork的退出状态码为2时进行
@@ -1457,7 +1458,7 @@ function inferTimeFromExpirationTimeWithSuspenseConfig(
 
 function renderRootSync(root, expirationTime) {
   const prevExecutionContext = executionContext;
-  // 将当前的执行上下文改为渲染上下文
+  // 将当前的执行上下文改为渲染上下文，即当前正在执行元素的渲染
   executionContext |= RenderContext;
   const prevDispatcher = pushDispatcher(root);
 
@@ -1587,6 +1588,8 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   setCurrentDebugFiberInDEV(unitOfWork);
 
   let next;
+  // 首先执行beginWork进行节点操作，以及创建子节点，子节点会返回成为next，如果有next就返回。
+  // 返回到workLoop之后，workLoop会判断是否过期之类的，如果都OK就会再次调用该方法。
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
     // 如果有性能检测
     startProfilerTimer(unitOfWork);
@@ -1600,6 +1603,11 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   // 开发环境
   resetCurrentDebugFiberInDEV();
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
+  // 如果next不存在则说明当前节点向下遍历子节点已经结束，说明这个子树侧枝已经遍历完，可以完成这部分工作了。
+  // 就执行completeUnitOfWork，completeUnitOfWork就是处理一些effact tag，
+  // 他会一直往上返回直到root节点或者在某一个节点发现有sibling兄弟节点为止。
+  // 如果到了root那么他的返回也是null，代表整棵树的遍历已经结束了，可以commit了，
+  // 如果遇到兄弟节点就返回该节点，因为这个节点可能也会存在子节点，需要通过beginWork进行操作。
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
     // 如果这没有产生新的工作，请完成当前工作
@@ -2908,6 +2916,7 @@ function warnAboutUpdateOnUnmountedFiberInDEV(fiber) {
 
 let beginWork;
 if (__DEV__ && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
+  // 开发环境
   let dummyFiber = null;
   beginWork = (current, unitOfWork, expirationTime) => {
     // If a component throws an error, we replay it again in a synchronously
