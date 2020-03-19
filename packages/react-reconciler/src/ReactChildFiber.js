@@ -1304,6 +1304,7 @@ function ChildReconciler(shouldTrackSideEffects) {
   // This API will tag the children with the side-effect of the reconciliation
   // itself. They will be added to the side-effect list as we pass through the
   // children and the parent.
+  // 该API将使用对帐本身的副作用标记子项。 当我们通过孩子和父母时，它们将被添加到副作用列表中。
   function reconcileChildFibers(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,

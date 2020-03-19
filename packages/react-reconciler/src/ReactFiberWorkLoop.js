@@ -243,6 +243,7 @@ let workInProgressRootLatestSuspenseTimeout: ExpirationTime = Sync;
 let workInProgressRootCanSuspendUsingConfig: null | SuspenseConfig = null;
 // The work left over by components that were visited during this render. Only
 // includes unprocessed updates, not work in bailed out children.
+// 在此渲染期间访问过的组件所留下的工作。 仅包括未处理的更新，不适用于获救的child。
 let workInProgressRootNextUnprocessedUpdateTime: ExpirationTime = NoWork;
 
 // If we're pinged while rendering we don't always restart immediately.
@@ -299,6 +300,7 @@ let spawnedWorkDuringRender: null | Array<ExpirationTime> = null;
 let currentEventTime: ExpirationTime = NoWork;
 
 export function requestCurrentTimeForUpdate() {
+  // 初始化时，executionContext为LegacyUnbatchedContext
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // We're inside React, so it's fine to read the actual time.
     // 在react中
@@ -405,13 +407,14 @@ export function scheduleUpdateOnFiber(
 
   //判断是否有高优先级任务打断当前正在执行的任务
   checkForInterruption(fiber, expirationTime);
+  // 记录调度更新
   recordScheduleUpdate();
 
   // TODO: computeExpirationForFiber also reads the priority. Pass the
   // priority as an argument to that function and this one.
+  
   const priorityLevel = getCurrentPriorityLevel();
-
-  //1073741823
+  //1073741823 === Math.pow(2, 30) - 1
   //如果expirationTime等于最大整型值的话
   //如果是同步任务的过期时间的话
   if (expirationTime === Sync) {
@@ -465,7 +468,7 @@ export function scheduleUpdateOnFiber(
     (executionContext & DiscreteEventContext) !== NoContext &&
     // Only updates at user-blocking priority or greater are considered
     // discrete, even inside a discrete event.
-    // 只有在用户阻止优先级或更高优先级的更新才被视为离散，即使在离散事件中也是如此
+    // 只处理优先级更高的任务，如用户交互，或者应该立即完成的
     (priorityLevel === UserBlockingPriority ||
       priorityLevel === ImmediatePriority)
   ) {
@@ -513,7 +516,7 @@ function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
   // 将父路径遍历到根并更新子项的到期时间。
   let node = fiber.return;
   let root = null;
-  // FiberNode节点
+  // FiberNode根节点
   if (node === null && fiber.tag === HostRoot) {
     // 获取到FiberRootNode
     root = fiber.stateNode;
@@ -994,7 +997,9 @@ function finishConcurrentRender(
 
 // This is the entry point for synchronous tasks that don't go
 // through Scheduler
+// 这是一个不经过调度的同步任务的入口点
 function performSyncWorkOnRoot(root) {
+  // 这里的root是FiberRootNode
   invariant(
     (executionContext & (RenderContext | CommitContext)) === NoContext,
     'Should not already be working.',
@@ -1022,13 +1027,14 @@ function performSyncWorkOnRoot(root) {
     }
   } else {
     // There's no expired work. This must be a new, synchronous render.
+    // 没有过期的工作。 这必须是新的同步渲染。
     expirationTime = Sync;
   }
 
   // 同步渲染FiberRoot,渲染完成后返回一个状态码，标记任务进行的状态
   let exitStatus = renderRootSync(root, expirationTime);
 
-  // 当前fiber为FiberRootNode且fiberWork的退出状态码为2时进行
+  // 当前fiber为FiberNode且fiberWork的退出状态码为2时进行
   if (root.tag !== LegacyRoot && exitStatus === RootErrored) {
     // If something threw an error, try rendering one more time. We'll
     // render synchronously to block concurrent data mutations, and we'll
@@ -1466,6 +1472,17 @@ function renderRootSync(root, expirationTime) {
   // and prepare a fresh one. Otherwise we'll continue where we left off.
   // 如果根或到期时间已更改，则丢弃现有堆栈并准备新的堆栈。 否则，我们将从中断的地方继续。
   if (root !== workInProgressRoot || expirationTime !== renderExpirationTime) {
+    // 该函数作用，改变全局变量的初值
+    // workInProgressRoot = root;
+    // workInProgress = createWorkInProgress(root.current, null);
+    // renderExpirationTime = expirationTime;
+    // workInProgressRootExitStatus = RootIncomplete;
+    // workInProgressRootFatalError = null;
+    // workInProgressRootLatestProcessedExpirationTime = Sync;
+    // workInProgressRootLatestSuspenseTimeout = Sync;
+    // workInProgressRootCanSuspendUsingConfig = null;
+    // workInProgressRootNextUnprocessedUpdateTime = NoWork;
+    // workInProgressRootHasPendingPing = false;
     prepareFreshStack(root, expirationTime);
     startWorkOnPendingInteractions(root, expirationTime);
   }
@@ -1516,6 +1533,7 @@ function renderRootSync(root, expirationTime) {
 function workLoopSync() {
   // Already timed out, so perform work without checking if we need to yield.
   // 直到没有fiber任务需要执行
+  // workInProgress记录当前执行fiber
   while (workInProgress !== null) {
     workInProgress = performUnitOfWork(workInProgress);
   }

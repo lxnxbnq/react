@@ -217,7 +217,7 @@ function findHostInstanceWithWarning(
   }
   return findHostInstance(component);
 }
-// 创建fiber节点 包含FiberRootNode 以及FiberNode
+// 创建fiber节点 包含FiberRootNode 以及FiberNode，两者为互相引用关系
 export function createContainer(
   containerInfo: Container,
   tag: RootTag,
@@ -236,7 +236,7 @@ export function updateContainer(
   if (__DEV__) {
     onScheduleRoot(container, element);
   }
-  // current 在ReactFiberRoot.js -> createFiberRoot ->  createHostRootFiber(tag)生成
+  // current 在ReactFiberRoot.js -> createFiberRoot ->  createHostRootFiber(tag:3)生成
   const current = container.current;
   // 记录当前时间
   const currentTime = requestCurrentTimeForUpdate();

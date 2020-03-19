@@ -195,8 +195,8 @@ function legacyRenderSubtreeIntoContainer(
     // 1. 创建一个fiber节点(FiberRootNode、FiberNode)
     // 2. 初始化updateQueue
     //  root为ReactRoot实例，
-    //  root._internalRoot 即为fiberRoot实例，
-    //  root._internalRoot.current即为Fiber实例，
+    //  root._internalRoot 即为fiberRootNode实例，
+    //  root._internalRoot.current即为HostRootFiber实例，
     //  root._internalRoot.current.stateNode = root._internalRoot
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,

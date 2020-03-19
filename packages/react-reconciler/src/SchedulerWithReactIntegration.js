@@ -71,6 +71,14 @@ export const requestPaint =
 let syncQueue: Array<SchedulerCallback> | null = null;
 let immediateQueueCallbackNode: mixed | null = null;
 let isFlushingSyncQueue: boolean = false;
+
+// initialTimeMs的值如下
+// var initialTime = Date.now();
+
+// exports.unstable_now = function () {
+//   return Date.now() - initialTime;
+// };
+
 let initialTimeMs: number = Scheduler_now();
 
 // If the initial timestamp is reasonably small, use Scheduler's `now` directly.

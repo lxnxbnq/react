@@ -357,15 +357,19 @@ export function processUpdateQueue<State>(
   }
 
   // The last rebase update that is NOT part of the base state.
+  // 不属于基本状态的最后一个基准更新。
   let baseQueue = queue.baseQueue;
 
   // The last pending update that hasn't been processed yet.
+  // 尚未处理的最后一个未决更新。
   let pendingQueue = queue.shared.pending;
   if (pendingQueue !== null) {
     // We have new updates that haven't been processed yet.
     // We'll add them to the base queue.
+    // 我们有尚未处理的新更新。 我们将它们添加到基本队列中。
     if (baseQueue !== null) {
       // Merge the pending queue and the base queue.
+      // 合并暂挂队列和基本队列。
       let baseFirst = baseQueue.next;
       let pendingFirst = pendingQueue.next;
       baseQueue.next = pendingFirst;
@@ -506,7 +510,9 @@ export function processUpdateQueue<State>(
     // shouldComponentUpdate is tricky; but we'll have to account for
     // that regardless.
     markUnprocessedUpdateTime(newExpirationTime);
+    // 将当前工作fiber的expirationTime置为0
     workInProgress.expirationTime = newExpirationTime;
+    // 保存新的state
     workInProgress.memoizedState = newState;
   }
 

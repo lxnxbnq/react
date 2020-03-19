@@ -109,7 +109,7 @@ export type FiberRoot = {
 
 function FiberRootNode(containerInfo, tag, hydrate) {
   this.tag = tag;// LegacyRoot
-  this.current = null;
+  this.current = null; // current引用ReactNode
   this.containerInfo = containerInfo; // root节点，render方法接收的第二个参数
   this.pendingChildren = null;
   this.pingCache = null;

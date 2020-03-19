@@ -748,6 +748,7 @@ current: Fiber | null,
             }
           }
         } else {
+          // 创建DOM实例
           let instance = createInstance(
             type,
             newProps,
@@ -755,7 +756,8 @@ current: Fiber | null,
             currentHostContext,
             workInProgress,
           );
-
+          
+          // 插入所有DOM
           appendAllChildren(instance, workInProgress, false, false);
 
           // This needs to be set before we mount Flare event listeners

@@ -1005,6 +1005,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState !== null ? prevState.element : null;
   cloneUpdateQueue(current, workInProgress);
+  // 处理更新队列
   processUpdateQueue(workInProgress, nextProps, null, renderExpirationTime);
   const nextState = workInProgress.memoizedState;
   // Caution: React DevTools currently depends on this property
@@ -1049,6 +1050,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   } else {
     // Otherwise reset hydration state in case we aborted and resumed another
     // root.
+    // 否则，请重置水合作用状态，以防我们终止并恢复另一个根目录。
     reconcileChildren(
       current,
       workInProgress,
@@ -2872,7 +2874,7 @@ function remountFiber(
 }
 
 function beginWork(
-  current: Fiber | null,
+  current: Fiber | null,// workInProgress.alternate
   workInProgress: Fiber,
   renderExpirationTime: ExpirationTime,
 ): Fiber | null {
