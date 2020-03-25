@@ -748,7 +748,7 @@ current: Fiber | null,
             }
           }
         } else {
-          // 创建DOM实例
+          // 创建DOM实例, 具体方法看ReactDOMHostConfig.js
           let instance = createInstance(
             type,
             newProps,

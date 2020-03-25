@@ -2900,8 +2900,8 @@ function beginWork(
   }
 
   if (current !== null) {
-    const oldProps = current.memoizedProps;
-    const newProps = workInProgress.pendingProps;
+    const oldProps = current.memoizedProps; // 获取旧的props
+    const newProps = workInProgress.pendingProps; // 获取更新后的props
 
     if (
       oldProps !== newProps ||

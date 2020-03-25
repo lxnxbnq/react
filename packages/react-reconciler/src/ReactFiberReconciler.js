@@ -285,8 +285,7 @@ export function updateContainer(
   // 创建一个update队列
   const update = createUpdate(expirationTime, suspenseConfig);
   // Caution: React DevTools currently depends on this property
-  // being called "element".
-  // 警告： React DevTools当前依靠此属性
+  // 在update.payload中保存虚拟DOM
   update.payload = {element};
 
   callback = callback === undefined ? null : callback;

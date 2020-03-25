@@ -273,7 +273,7 @@ function FiberNode(
   this.stateNode = null;
 
   // Fiber
-  this.return = null; // return fiber是程序处理当前fiber应该返回的fiber。从概念上讲，它与堆栈帧的返回地址相同。也可以将其视为parent fiber。
+  this.return = null; //父节点parent fiber。
 
   // 树节点会将自己的第一个节点作为child，然后再从child遍历，形成单向链表，作为其他子节点，也就是sibling
   this.child = null;

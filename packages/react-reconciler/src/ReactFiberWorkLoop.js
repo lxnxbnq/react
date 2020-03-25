@@ -1599,6 +1599,7 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   // nothing should rely on this, but relying on it here means that we don't
   // need an additional field on the work in progress.
   // fiber的current, flushed, state是备用状态。 理想情况下，没有人应该依赖此，但是这里依赖它意味着我们在进行中的工作中不需要一个额外的字段。
+  // 在备用的fiber操作
   const current = unitOfWork.alternate;
 
   // 开发环境中运行
@@ -1629,6 +1630,7 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
     // 如果这没有产生新的工作，请完成当前工作
+    // 完成任务调度，属实
     next = completeUnitOfWork(unitOfWork);
   }
 
@@ -1657,6 +1659,7 @@ function completeUnitOfWork(unitOfWork: Fiber): Fiber | null {
         !enableProfilerTimer ||
         (workInProgress.mode & ProfileMode) === NoMode
       ) {
+        // 完成工作，渲染真实DOM
         next = completeWork(current, workInProgress, renderExpirationTime);
       } else {
         startProfilerTimer(workInProgress);

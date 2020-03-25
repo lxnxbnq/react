@@ -153,7 +153,7 @@ if (__DEV__) {
 
 export function initializeUpdateQueue<State>(fiber: Fiber): void {
   const queue: UpdateQueue<State> = {
-    baseState: fiber.memoizedState,
+    baseState: fiber.memoizedState, // 旧的state
     baseQueue: null,
     shared: {
       pending: null,
@@ -203,13 +203,16 @@ export function createUpdate(
 }
 
 export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
-  // updateQueue结构，element就是fiber
-  // {
-  //   baseState: {element: {…}}
-  //   baseQueue: null
-  //   shared: {pending: null}
-  //   effects: null
-  // }
+
+  // updateQueue结构，
+  // const queue: UpdateQueue<State> = {
+  //   baseState: fiber.memoizedState, // 旧的state
+  //   baseQueue: null,
+  //   shared: {
+  //     pending: null,
+  //   },
+  //   effects: null,
+  // };
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.
@@ -219,6 +222,18 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
 
   const sharedQueue = updateQueue.shared;
   const pending = sharedQueue.pending;
+
+  // update结构
+  // let update: Update<*> = {
+  //   expirationTime,
+  //   suspenseConfig,
+
+  //   tag: UpdateState, // 0
+  //   payload: null,
+  //   callback: null,
+
+  //   next: (null: any),
+  // };
   if (pending === null) {
     // This is the first update. Create a circular list.
     // 首次更新，创建一个循环列表
@@ -227,6 +242,8 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
     update.next = pending.next;
     pending.next = update;
   }
+  // 将update放置到fiber.updateQueue.shared.pending中
+  // fiber.updateQueue.shared.pending.element就是虚拟DOM
   sharedQueue.pending = update;
 
   if (__DEV__) {
