@@ -21,9 +21,11 @@ function Component(props, context, updater) {
   this.props = props;
   this.context = context;
   // If a component has string refs, we will assign a different object later.
+  // 兼容字符串的refs, 如果是一个字符串的refs，会分配一个不同的对象
   this.refs = emptyObject;
   // We initialize the default updater but the real one gets injected by the
   // renderer.
+  // 真正由renderer注入
   this.updater = updater || ReactNoopUpdateQueue;
 }
 

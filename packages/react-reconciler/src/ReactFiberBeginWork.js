@@ -1003,18 +1003,21 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   );
   const nextProps = workInProgress.pendingProps;
   const prevState = workInProgress.memoizedState;
-  const prevChildren = prevState !== null ? prevState.element : null;
+  const prevChildren = prevState !== null ? prevState.element : null; // oldTree上的虚拟DOM
   cloneUpdateQueue(current, workInProgress);
   // 处理更新队列
   processUpdateQueue(workInProgress, nextProps, null, renderExpirationTime);
   const nextState = workInProgress.memoizedState;
   // Caution: React DevTools currently depends on this property
   // being called "element".
+  // newTree上的虚拟DOM
   const nextChildren = nextState.element;
   if (nextChildren === prevChildren) {
     // If the state is the same as before, that's a bailout because we had
     // no work that expires at this time.
+    // 如果状态与以前相同，则bailout（跳过），因为我们到当前的expires time没有work。
     resetHydrationState();
+    // 最后返回child节点，如果没有则返回null
     return bailoutOnAlreadyFinishedWork(
       current,
       workInProgress,
@@ -1050,7 +1053,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   } else {
     // Otherwise reset hydration state in case we aborted and resumed another
     // root.
-    // 否则，请重置水合作用状态，以防我们终止并恢复另一个根目录。
+    // 调和子节点，进行diff对比
     reconcileChildren(
       current,
       workInProgress,
@@ -1443,7 +1446,7 @@ function mountIndeterminateComponent(
         props,
       );
     }
-
+    // 采用Class组件
     adoptClassInstance(workInProgress, value);
     mountClassInstance(workInProgress, Component, props, renderExpirationTime);
     return finishClassComponent(
@@ -3164,6 +3167,7 @@ function beginWork(
         renderExpirationTime,
       );
     }
+    // 宿主元素类型（比如:div、span这些都tag都为3）
     case HostRoot:
       return updateHostRoot(current, workInProgress, renderExpirationTime);
     case HostComponent:

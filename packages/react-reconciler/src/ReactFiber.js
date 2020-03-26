@@ -138,19 +138,24 @@ export type Fiber = {|
   // minimize the number of objects created during the initial render.
 
   // Tag identifying the type of fiber.
+  // 标记不同的组件类型
   tag: WorkTag,
 
   // Unique identifier of this child.
+  // ReactElement里面的key
   key: null | string,
 
   // The value of element.type which is used to preserve the identity during
   // reconciliation of this child.
+  // ReactElement.type，也就是我们调用`createElement`的第一个参数
   elementType: any,
 
   // The resolved function/class/ associated with this fiber.
+  // 异步组件resolved之后返回的内容，一般是`function`或者`class`
   type: any,
 
   // The local state associated with this fiber.
+  // 跟当前Fiber相关本地状态（比如浏览器环境就是DOM节点）
   stateNode: any,
 
   // Conceptual aliases
@@ -163,9 +168,12 @@ export type Fiber = {|
   // This is effectively the parent, but there can be multiple parents (two)
   // so this is only the parent of the thing we're currently processing.
   // It is conceptually the same as the return address of a stack frame.
+  // 指向他在Fiber节点树中的`parent`，用来在处理完这个节点之后向上返回
   return: Fiber | null,
 
   // Singly Linked List Tree Structure.
+  // 单链表结构
+  // 树节点会将自己的第一个节点作为child，然后再从child遍历，形成单向链表，作为其他子节点，也就是sibling
   child: Fiber | null,
   sibling: Fiber | null,
   index: number,
@@ -178,13 +186,17 @@ export type Fiber = {|
     | RefObject,
 
   // Input is the data coming into process this fiber. Arguments. Props.
+  // 新的变动带来的新的props
   pendingProps: any, // This type will be more specific once we overload the tag.
+  // 上一次渲染完成之后的props
   memoizedProps: any, // The props used to create the output.
 
   // A queue of state updates and callbacks.
+  // 该Fiber对应的组件产生的Update会存放在这个队列里面
   updateQueue: UpdateQueue<any> | null,
 
   // The state used to create the output
+  // 上一次渲染的时候的state
   memoizedState: any,
 
   // Dependencies (contexts, events) for this fiber, if it has any
@@ -196,36 +208,52 @@ export type Fiber = {|
   // parent. Additional flags can be set at creation time, but after that the
   // value should remain unchanged throughout the fiber's lifetime, particularly
   // before its child fibers are created.
+  // 用来描述当前Fiber和他子树的`Bitfield`
+  // 共存的模式表示这个子树是否默认是异步渲染的
+  // Fiber被创建的时候他会继承父Fiber
+  // 其他的标识也可以在创建的时候被设置
+  // 但是在创建之后不应该再被修改，特别是他的子Fiber创建之前
   mode: TypeOfMode,
 
   // Effect
+  // 用来记录Side Effect（DOM操作）
   effectTag: SideEffectTag,
 
   // Singly linked list fast path to the next fiber with side-effects.
+  // 单链表用来快速查找下一个side effect
   nextEffect: Fiber | null,
 
   // The first and last fiber with side-effect within this subtree. This allows
   // us to reuse a slice of the linked list when we reuse the work done within
   // this fiber.
+  // 子树中第一个side effect
   firstEffect: Fiber | null,
+  // 子树中最后一个side effect
   lastEffect: Fiber | null,
 
   // Represents a time in the future by which this work should be completed.
   // Does not include work found in its subtree.
+  // 代表任务在未来的哪个时间点应该被完成
+  // 不包括他的子树产生的任务
   expirationTime: ExpirationTime,
 
   // This is used to quickly determine if a subtree has no pending changes.
+  // 快速确定子树中是否有不在等待的变化
   childExpirationTime: ExpirationTime,
 
   // This is a pooled version of a Fiber. Every fiber that gets updated will
   // eventually have a pair. There are cases when we can clean up pairs to save
   // memory if we need to.
+  // 在Fiber树更新的过程中，每个Fiber都会有一个跟其对应的Fiber
+  // 我们称他为`current <==> workInProgress`
+  // 在渲染完成之后他们会交换位置
   alternate: Fiber | null,
 
   // Time spent rendering this Fiber and its descendants for the current update.
   // This tells us how well the tree makes use of sCU for memoization.
   // It is reset to 0 each time we render and only updated when we don't bailout.
   // This field is only set when the enableProfilerTimer flag is enabled.
+  // 下面是调试相关的，收集每个Fiber和子树渲染时间的
   actualDuration?: number,
 
   // If the Fiber is currently active in the "render" phase,
@@ -282,24 +310,35 @@ function FiberNode(
 
   this.ref = null;
 
-  // 从概念上说，props是函数的参数。一个fiber的pendingProps在开始执行时设置，memoizedProps在结束时设置
-  // 当传入pendingProps等于memoizedProps，它示意之前的输出可以重用，预防不必要的工作。
+  // 新的变动带来的新的props
   this.pendingProps = pendingProps;
+  // 上一次渲染完成之后的props
   this.memoizedProps = null;
+  // 该Fiber对应的组件产生的Update会存放在这个队列里面
   this.updateQueue = null;
+  // 上一次渲染的时候的state
   this.memoizedState = null;
   this.dependencies = null;
 
-  this.mode = mode; // mode表示同步或者异步
+  // 用来描述当前Fiber和他子树的`Bitfield`
+  // 共存的模式表示这个子树是否默认是异步渲染的
+  // Fiber被创建的时候他会继承父Fiber
+  // 其他的标识也可以在创建的时候被设置
+  // 但是在创建之后不应该再被修改，特别是他的子Fiber创建之前
+  this.mode = mode;
 
   // Effects
-  this.effectTag = NoEffect;
-  this.nextEffect = null;
+  this.effectTag = NoEffect; // 记录当前的DOM操作
+  this.nextEffect = null; // 用于commit阶段记录firstEffect -> lastEffect链遍历过程中的每一个Fiber
 
-  this.firstEffect = null;
-  this.lastEffect = null;
+  this.firstEffect = null;// 子树中第一个side effec
+  this.lastEffect = null;// 子树中最后一个side effect
 
+  // 代表任务在未来的哪个时间点应该被完成
+  // 不包括他的子树产生的任务
   this.expirationTime = NoWork;
+
+  // 快速确定子树中是否有不在等待的变化
   this.childExpirationTime = NoWork;
 
   this.alternate = null;

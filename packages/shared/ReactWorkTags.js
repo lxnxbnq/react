@@ -32,9 +32,11 @@ export type WorkTag =
   | 21
   | 22;
 
+// 该文件中的常量定义的是Fiber的Tag
 export const FunctionComponent = 0;
 export const ClassComponent = 1;
-export const IndeterminateComponent = 2; // Before we know whether it is function or class
+// 不确定的Component
+export const IndeterminateComponent = 2; // Before we know whether it is function or class // 在我们知道它是函数还是类之前
 export const HostRoot = 3; // Root of a host tree. Could be nested inside another node.宿主树的根。可以嵌套在另一个节点内。
 export const HostPortal = 4; // A subtree. Could be an entry point to a different renderer.
 export const HostComponent = 5;

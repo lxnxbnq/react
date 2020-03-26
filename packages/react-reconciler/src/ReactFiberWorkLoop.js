@@ -1464,7 +1464,7 @@ function inferTimeFromExpirationTimeWithSuspenseConfig(
 
 function renderRootSync(root, expirationTime) {
   const prevExecutionContext = executionContext;
-  // 将当前的执行上下文改为渲染上下文，即当前正在执行元素的渲染
+  // 将当前的LegacyUnbatchedContext执行上下文改为RenderContext上下文
   executionContext |= RenderContext;
   const prevDispatcher = pushDispatcher(root);
 
