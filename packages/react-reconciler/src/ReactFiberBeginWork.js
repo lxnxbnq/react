@@ -828,12 +828,14 @@ function updateClassComponent(
       // inside a non-concurrent tree, in an inconsistent state. We want to
       // treat it like a new mount, even though an empty version of it already
       // committed. Disconnect the alternate pointers.
+      // 没有实例的类组件只有在以非同步状态挂在非并发树中时才安装。 即使已经提交了空版本，我们也希望将其视为新的安装。 断开备用指针。
       current.alternate = null;
       workInProgress.alternate = null;
       // Since this is conceptually a new fiber, schedule a Placement effect
       workInProgress.effectTag |= Placement;
     }
     // In the initial pass we might need to construct the instance.
+    // 在最初的过程中，我们可能需要构造实例。
     constructClassInstance(workInProgress, Component, nextProps);
     mountClassInstance(
       workInProgress,
