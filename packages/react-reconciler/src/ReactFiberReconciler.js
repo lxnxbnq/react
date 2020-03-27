@@ -239,6 +239,7 @@ export function updateContainer(
   // current 在ReactFiberRoot.js -> createFiberRoot ->  createHostRootFiber(tag:3)生成
   const current = container.current;
   // 记录当前时间
+  // MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0)
   const currentTime = requestCurrentTimeForUpdate();
   if (__DEV__) {
     // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
@@ -250,7 +251,7 @@ export function updateContainer(
   // TODO: 暂时不知道作用
   const suspenseConfig = requestCurrentSuspenseConfig();
   // expirationTime 代表优先级，数字越大优先级越高
-  // Sync 的数字是最大的，所以优先级也是最高的(首次渲染返回值是Sync 1073741823)
+  // 首次渲染返回值是Sync 1073741823
   const expirationTime = computeExpirationForFiber(
     currentTime,
     current,

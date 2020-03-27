@@ -20,7 +20,7 @@ import {
 
 export type ExpirationTime = number;
 
-export const NoWork = 0;
+export const NoWork = 0; // 表示没有更新
 // TODO: Think of a better name for Never. The key difference with Idle is that
 // Never work can be committed in an inconsistent state without tearing the UI.
 // The main example is offscreen content, like a hidden subtree. So one possible
@@ -31,19 +31,23 @@ export const NoWork = 0;
 export const Never = 1;
 // Idle is slightly higher priority than Never. It must completely finish in
 // order to be consistent.
+// Idle 比 Never 优先级高。 它必须完全完成才能保持一致。
 export const Idle = 2;
 // Continuous Hydration is slightly higher than Idle and is used to increase
 // priority of hover targets.
+// 持续 Hydration 比 Idle 略高，用于增加悬停目标的优先级。
 export const ContinuousHydration = 3;
-export const Sync = MAX_SIGNED_31_BIT_INT;
-export const Batched = Sync - 1;
+export const Sync = MAX_SIGNED_31_BIT_INT; // 代表同步执行，不会被调度也不会被打断
+export const Batched = Sync - 1; // 批处理
 
 const UNIT_SIZE = 10;
 const MAGIC_NUMBER_OFFSET = Batched - 1;
 
 // 1 unit of expiration time represents 10ms.
+// 以10毫秒为一个有效单位，在10毫秒内发生的更新为一个更新
 export function msToExpirationTime(ms: number): ExpirationTime {
   // Always subtract from the offset so that we don't clash with the magic number for NoWork.
+  // 始终从偏移量中减去，以免与NoWork的 魔法值 发生冲突。
   return MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0);
 }
 

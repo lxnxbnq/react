@@ -188,7 +188,7 @@ import {Resolved} from 'shared/ReactLazyStatusTags';
 
 const ReactCurrentOwner = ReactSharedInternals.ReactCurrentOwner;
 
-let didReceiveUpdate: boolean = false;
+let didReceiveUpdate: boolean = false; // 收到了更新
 
 let didWarnAboutBadClass;
 let didWarnAboutModulePatternComponent;
@@ -236,6 +236,7 @@ export function reconcileChildren(
 
     // If we had any progressed work already, that is invalid at this point so
     // let's throw it out.
+    // 这里的 reconcileChildFibers需要在开发环境中才能生成
     workInProgress.child = reconcileChildFibers(
       workInProgress,
       current.child,
@@ -1005,7 +1006,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState !== null ? prevState.element : null; // oldTree上的虚拟DOM
   cloneUpdateQueue(current, workInProgress);
-  // 处理更新队列
+  // 处理更新队列 setState，在这里会将虚拟DOM保存到当前工作fiber的memoizedState中
   processUpdateQueue(workInProgress, nextProps, null, renderExpirationTime);
   const nextState = workInProgress.memoizedState;
   // Caution: React DevTools currently depends on this property
@@ -1053,7 +1054,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   } else {
     // Otherwise reset hydration state in case we aborted and resumed another
     // root.
-    // 调和子节点，进行diff对比
+    // 调和子节点，进行同层diff对比
     reconcileChildren(
       current,
       workInProgress,
@@ -1062,6 +1063,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
     );
     resetHydrationState();
   }
+  // DFS（深度优先遍历）获取子节点
   return workInProgress.child;
 }
 
@@ -2881,7 +2883,7 @@ function beginWork(
   workInProgress: Fiber,
   renderExpirationTime: ExpirationTime,
 ): Fiber | null {
-  // 当前正在进行的fiber的expirationTime
+  // 当前正在进行的fiber的expirationTime Sync
   const updateExpirationTime = workInProgress.expirationTime;
 
   if (__DEV__) {

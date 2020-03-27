@@ -314,7 +314,8 @@ export function requestCurrentTimeForUpdate() {
     return currentEventTime;
   }
   // This is the first update since React yielded. Compute a new start time.
-  // 在react产生后的首次更新，计算一个新的开始时间
+  // 在react产生后的首次更新，计算一个新的开始时间，并且更新全局变量currentEventTime
+  // MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0)
   currentEventTime = msToExpirationTime(now());
   return currentEventTime;
 }
@@ -342,7 +343,9 @@ export function computeExpirationForFiber(
 
   if ((executionContext & RenderContext) !== NoContext) {
     // Use whatever time we're already rendering
+    // 使用我们已经渲染的任何时间
     // TODO: Should there be a way to opt out, like with `runWithPriority`?
+    // 是否应该有一种选择退出的方式，例如`runWithPriority`？
     return renderExpirationTime;
   }
 
@@ -355,6 +358,7 @@ export function computeExpirationForFiber(
     );
   } else {
     // Compute an expiration time based on the Scheduler priority.
+    // 根据调度程序优先级计算到期时间。
     switch (priorityLevel) {
       case ImmediatePriority:
         expirationTime = Sync;
@@ -439,7 +443,7 @@ export function scheduleUpdateOnFiber(
       // should be deferred until the end of the batch.
       // 这是一个遗留的边缘情况。在batchedUpdates内部的ReactDOM.render根的初始安装应该是同步的，
       // 但是布局更新应推迟到批处理结束。
-      // 执行root的同步工作
+      // 执行RootFiber的同步工作
       performSyncWorkOnRoot(root);
     } else {
       ensureRootIsScheduled(root);
@@ -503,7 +507,6 @@ export const scheduleWork = scheduleUpdateOnFiber;
 function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
   // Update the source fiber's expiration time
   // 更新源fiber的到期时间
-  // 也就是说，当前fiber的优先级是小于expirationTime的优先级的，现在要调高fiber的优先级
   if (fiber.expirationTime < expirationTime) {
     fiber.expirationTime = expirationTime;
   }
@@ -523,6 +526,11 @@ function markUpdateTimeFromFiberToRoot(fiber, expirationTime) {
   } else {
     while (node !== null) {
       alternate = node.alternate;
+      // 每次一个节点调用setState或者forceUpdate都会产生一个更新并且计算一个expirationTime，
+      // 那么这个节点的expirationTime就是当时计算出来的值，因为这个更新本身就是由这个节点产生的
+      // 最终因为 React 的更新需要从FiberRoot开始，所以会执行一次向上遍历找到FiberRoot，
+      // 而向上遍历则正好是一步步找到创建更新的节点的父节点的过程，
+      // 这时候 React 就会对每一个该节点的父节点链上的节点设置childExpirationTime，因为这个更新是他们的子孙节点造成的
       if (node.childExpirationTime < expirationTime) {
         node.childExpirationTime = expirationTime;
         if (
@@ -1260,7 +1268,9 @@ function prepareFreshStack(root, expirationTime) {
     }
   }
   workInProgressRoot = root;
+  // 创建一个正在进行的Fiber任务
   workInProgress = createWorkInProgress(root.current, null);
+  // Sync
   renderExpirationTime = expirationTime;
   workInProgressRootExitStatus = RootIncomplete;
   workInProgressRootFatalError = null;
@@ -1535,6 +1545,7 @@ function workLoopSync() {
   // 直到没有fiber任务需要执行
   // workInProgress记录当前执行fiber
   while (workInProgress !== null) {
+    // performUnitOfWork函数的主要目的就是执行Fiber的单链表结构
     workInProgress = performUnitOfWork(workInProgress);
   }
 }
@@ -1612,6 +1623,7 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
     // 如果有性能检测
     startProfilerTimer(unitOfWork);
+    // renderExpirationTime 的值就是在 prepareFreshStack 被调用时初始化为Sync
     next = beginWork(current, unitOfWork, renderExpirationTime);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
@@ -1623,14 +1635,13 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   resetCurrentDebugFiberInDEV();
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
   // 如果next不存在则说明当前节点向下遍历子节点已经结束，说明这个子树侧枝已经遍历完，可以完成这部分工作了。
-  // 就执行completeUnitOfWork，completeUnitOfWork就是处理一些effact tag，
+  // 就执行completeUnitOfWork，completeUnitOfWork就是处理一些effact tag，
   // 他会一直往上返回直到root节点或者在某一个节点发现有sibling兄弟节点为止。
   // 如果到了root那么他的返回也是null，代表整棵树的遍历已经结束了，可以commit了，
   // 如果遇到兄弟节点就返回该节点，因为这个节点可能也会存在子节点，需要通过beginWork进行操作。
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
-    // 如果这没有产生新的工作，请完成当前工作
-    // 完成任务调度，属实
+    // 当一个节点没有字节点后，会进入这里，如果有兄弟节点执行兄弟节点
     next = completeUnitOfWork(unitOfWork);
   }
 

@@ -239,7 +239,7 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   //   suspenseConfig,
 
   //   tag: UpdateState, // 0
-  //   payload: null,
+  //   payload: {element},
   //   callback: null,
 
   //   next: (null: any),
@@ -330,8 +330,9 @@ function getStateFromUpdate<State>(
       workInProgress.effectTag =
         (workInProgress.effectTag & ~ShouldCapture) | DidCapture;
     }
-    // Intentional fallthrough
+    // Intentional fallthrough 首次render会到这里
     case UpdateState: {
+      // 获取到update 中的 payload(其中，包含虚拟DOM element)
       const payload = update.payload;
       let partialState;
       if (typeof payload === 'function') {
@@ -358,6 +359,7 @@ function getStateFromUpdate<State>(
         return prevState;
       }
       // Merge the partial state and the previous state.
+      // 合并之前的state和新的state,并且带有element（虚拟DOM）
       return Object.assign({}, prevState, partialState);
     }
     case ForceUpdate: {
@@ -389,6 +391,17 @@ export function processUpdateQueue<State>(
 
   // The last pending update that hasn't been processed yet.
   // 尚未处理的最后一个未决更新。
+  // pending结构
+  // let update: Update<*> = {
+  //   expirationTime,
+  //   suspenseConfig,
+
+  //   tag: UpdateState, // 0
+  //   payload: {element},
+  //   callback: null,
+
+  //   next: update,
+  // };
   let pendingQueue = queue.shared.pending;
   if (pendingQueue !== null) {
     // We have new updates that haven't been processed yet.
@@ -435,6 +448,7 @@ export function processUpdateQueue<State>(
           // Priority is insufficient. Skip this update. If this is the first
           // skipped update, the previous update/state is the new base
           // update/state.
+          // 优先权不足。 跳过此更新。 如果这是第一个跳过的更新，则先前的更新/状态是新的基本更新/状态。
           const clone: Update<State> = {
             expirationTime: update.expirationTime,
             suspenseConfig: update.suspenseConfig,
@@ -457,6 +471,7 @@ export function processUpdateQueue<State>(
           }
         } else {
           // This update does have sufficient priority.
+          // 此更新确实具有足够的优先级
 
           if (newBaseQueueLast !== null) {
             const clone: Update<State> = {
@@ -484,6 +499,7 @@ export function processUpdateQueue<State>(
           );
 
           // Process this update.
+          // 在这里会更新更新state，通过Object.assign合并prevState和newState
           newState = getStateFromUpdate(
             workInProgress,
             queue,
@@ -493,9 +509,12 @@ export function processUpdateQueue<State>(
             instance,
           );
           const callback = update.callback;
+          // 当前的setState是否带有回调
           if (callback !== null) {
+            // 将effectTag更新为0b0000000100000
             workInProgress.effectTag |= Callback;
             let effects = queue.effects;
+            // 向副作用函数队列中增加一个回调
             if (effects === null) {
               queue.effects = [update];
             } else {
@@ -507,6 +526,7 @@ export function processUpdateQueue<State>(
         if (update === null || update === first) {
           pendingQueue = queue.shared.pending;
           if (pendingQueue === null) {
+            // 如果没有等待更新的队列则break
             break;
           } else {
             // An update was scheduled from inside a reducer. Add the new

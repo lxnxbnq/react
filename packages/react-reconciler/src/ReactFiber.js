@@ -294,11 +294,11 @@ function FiberNode(
   mode: TypeOfMode,
 ) {
   // Instance
-  this.tag = tag;
+  this.tag = tag; // 标记不同的组件类型
   this.key = key;
   this.elementType = null;
   this.type = null;
-  this.stateNode = null;
+  this.stateNode = null; // 跟当前Fiber相关本地状态（比如浏览器环境就是DOM节点）
 
   // Fiber
   this.return = null; //父节点parent fiber。
@@ -406,10 +406,10 @@ function FiberNode(
 // 5) It should be easy to port this to a C struct and keep a C implementation
 //    compatible.
 const createFiber = function(
-  tag: WorkTag, // HostRoot
+  tag: WorkTag, // 3
   pendingProps: mixed, // null
   key: null | string, // null
-  mode: TypeOfMode,
+  mode: TypeOfMode, // NoWork
 ): Fiber {
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors
   return new FiberNode(tag, pendingProps, key, mode);
@@ -641,6 +641,7 @@ export function resetWorkInProgress(
 }
 
 export function createHostRootFiber(tag: RootTag): Fiber {
+  // 初次渲染的tag为LegacyRoot
   let mode; // false表示同步，true异步
   if (tag === ConcurrentRoot) {
     mode = ConcurrentMode | BlockingMode | StrictMode;
@@ -657,6 +658,7 @@ export function createHostRootFiber(tag: RootTag): Fiber {
     mode |= ProfileMode;
   }
 
+  // 创建一个fiber根节点
   return createFiber(HostRoot, null, null, mode);
 }
 

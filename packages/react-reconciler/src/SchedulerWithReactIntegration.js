@@ -74,11 +74,11 @@ let isFlushingSyncQueue: boolean = false;
 
 // initialTimeMs的值如下
 // var initialTime = Date.now();
-
 // exports.unstable_now = function () {
 //   return Date.now() - initialTime;
 // };
-
+// 
+// Scheduler_now === unstable_now
 let initialTimeMs: number = Scheduler_now();
 
 // If the initial timestamp is reasonably small, use Scheduler's `now` directly.
@@ -87,7 +87,12 @@ let initialTimeMs: number = Scheduler_now();
 // timestamp. In that case, subtract the module initialization time to simulate
 // the behavior of performance.now and keep our times small enough to fit
 // within 32 bits.
+// 如果初始时间戳相当小，请直接使用Scheduler的“ now”。
+// 支持“ performance.now”的现代浏览器就是这种情况。
+// 在较旧的浏览器中，Scheduler会退回到`Date.now`，它返回Unix时间戳。 
+// 在这种情况下，请减去模块初始化时间以模拟performance.now的行为，并使我们的时间保持足够小以适合32 bits。
 // TODO: Consider lifting this into Scheduler.
+// 考虑将其提升到Scheduler中。
 export const now =
   initialTimeMs < 10000 ? Scheduler_now : () => Scheduler_now() - initialTimeMs;
 

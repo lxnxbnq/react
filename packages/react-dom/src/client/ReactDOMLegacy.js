@@ -195,8 +195,8 @@ function legacyRenderSubtreeIntoContainer(
     // 1. 创建一个fiber节点(FiberRootNode、FiberNode)
     // 2. 初始化updateQueue
     //  root为ReactRoot实例，
-    //  root._internalRoot 即为fiberRootNode实例，
-    //  root._internalRoot.current即为HostRootFiber实例，
+    //  root._internalRoot 即为FiberRoot，为Fiber的父节点
+    //  root._internalRoot.current即为RootFiber，为根Fiber节点
     //  root._internalRoot.current.stateNode = root._internalRoot
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
@@ -212,6 +212,7 @@ function legacyRenderSubtreeIntoContainer(
     }
     // Initial mount should not be batched.
     unbatchedUpdates(() => {
+      // children是虚拟DOM，fiberRoot是整个任务的根
       updateContainer(children, fiberRoot, parentComponent, callback);
     });
   } else {
