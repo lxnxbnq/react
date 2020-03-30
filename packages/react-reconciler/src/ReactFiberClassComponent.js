@@ -521,6 +521,7 @@ function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: any) {
   }
 }
 
+// 在初始化时，当遇到的Fiber 的tag是一个类组件时，会给实例增加一个updater，这个updater就是调用setState时触发的函数
 function adoptClassInstance(workInProgress: Fiber, instance: any): void {
   instance.updater = classComponentUpdater;
   workInProgress.stateNode = instance;

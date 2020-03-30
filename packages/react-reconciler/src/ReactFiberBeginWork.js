@@ -1010,6 +1010,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   cloneUpdateQueue(current, workInProgress);
   // 处理更新队列 setState，在这里会将虚拟DOM保存到当前工作fiber的memoizedState中
   processUpdateQueue(workInProgress, nextProps, null, renderExpirationTime);
+  // nextState.element === workInprogress.updateQueue.shared.pending.payload.element
   const nextState = workInProgress.memoizedState;
   // Caution: React DevTools currently depends on this property
   // being called "element".
@@ -2926,7 +2927,7 @@ function beginWork(
       // This fiber does not have any pending work. Bailout without entering
       // the begin phase. There's still some bookkeeping we that needs to be done
       // in this optimized path, mostly pushing stuff onto the stack.
-      // 该fiber没有任何待处理的工作。 无需进入开始阶段即可进行救助。 在这种优化路径下，我们仍然需要做一些簿记工作，主要是将内容推入堆栈。
+      // 该fiber没有任何待处理的工作。 无需进入开始阶段即可 跳出。 在这种优化路径下，我们仍然需要做一些簿记工作，主要是将内容推入堆栈。
       switch (workInProgress.tag) {
         case HostRoot:
           pushHostRootContext(workInProgress);

@@ -197,7 +197,7 @@ function legacyRenderSubtreeIntoContainer(
     //  root为ReactRoot实例，
     //  root._internalRoot 即为FiberRoot，为Fiber的父节点
     //  root._internalRoot.current即为RootFiber，为根Fiber节点
-    //  root._internalRoot.current.stateNode = root._internalRoot
+    //  root._internalRoot.current.stateNode === root._internalRoot
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
       forceHydrate,

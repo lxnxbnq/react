@@ -155,7 +155,9 @@ export type Fiber = {|
   type: any,
 
   // The local state associated with this fiber.
-  // 跟当前Fiber相关本地状态（比如浏览器环境就是DOM节点）
+  // 跟当前Fiber相关本地状态，比如：
+  // 1.浏览器环境就是DOM节点
+  // 2.类组件就是state
   stateNode: any,
 
   // Conceptual aliases
@@ -406,10 +408,10 @@ function FiberNode(
 // 5) It should be easy to port this to a C struct and keep a C implementation
 //    compatible.
 const createFiber = function(
-  tag: WorkTag, // 3
-  pendingProps: mixed, // null
-  key: null | string, // null
-  mode: TypeOfMode, // NoWork
+  tag: WorkTag,
+  pendingProps: mixed,
+  key: null | string,
+  mode: TypeOfMode,
 ): Fiber {
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors
   return new FiberNode(tag, pendingProps, key, mode);
@@ -451,6 +453,7 @@ export function resolveLazyComponentTag(Component: Function): WorkTag {
 
 // This is used to create an alternate fiber to do work on.
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
+  // 当前工作任务和fiber的备用地址建立引用
   let workInProgress = current.alternate;
   if (workInProgress === null) {
     // We use a double buffering pooling technique because we know that we'll

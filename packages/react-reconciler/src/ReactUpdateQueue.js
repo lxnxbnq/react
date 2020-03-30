@@ -180,6 +180,7 @@ export function cloneUpdateQueue<State>(
   // Clone the update queue from current. Unless it's already a clone.
   const queue: UpdateQueue<State> = (workInProgress.updateQueue: any);
   const currentQueue: UpdateQueue<State> = (current.updateQueue: any);
+  // 这里的queue 和currentQueue是同一个引用
   if (queue === currentQueue) {
     const clone: UpdateQueue<State> = {
       baseState: currentQueue.baseState,
@@ -253,7 +254,8 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
     pending.next = update;
   }
   // 将update放置到fiber.updateQueue.shared.pending中
-  // fiber.updateQueue.shared.pending.element就是虚拟DOM
+  // fiber中有updateQueue对象，updateQueue.shared.pending 保存了 update对象
+  // fiber.updateQueue.shared.pending.payload.element就是虚拟DOM
   sharedQueue.pending = update;
 
   if (__DEV__) {
@@ -415,7 +417,7 @@ export function processUpdateQueue<State>(
       baseQueue.next = pendingFirst;
       pendingQueue.next = baseFirst;
     }
-
+    // 将updateQueue中的baseQueue与update建立引用
     baseQueue = pendingQueue;
 
     queue.shared.pending = null;
@@ -499,7 +501,8 @@ export function processUpdateQueue<State>(
           );
 
           // Process this update.
-          // 在这里会更新更新state，通过Object.assign合并prevState和newState
+          // 在这里会更新更新state，通过Object.assign合并prevState和newState, 
+          // 在这个函数中，会建立和虚拟DOM直接的引用，也就是newState.element === update.payload.element === workInprogress.updateQueue.shared.pending.payload.element
           newState = getStateFromUpdate(
             workInProgress,
             queue,
@@ -546,6 +549,7 @@ export function processUpdateQueue<State>(
       newBaseQueueLast.next = (newBaseQueueFirst: any);
     }
 
+    // baseState.element === newState.element === update.payload.element
     queue.baseState = ((newBaseState: any): State);
     queue.baseQueue = newBaseQueueLast;
 
@@ -560,6 +564,7 @@ export function processUpdateQueue<State>(
     // 将当前工作fiber的expirationTime置为0
     workInProgress.expirationTime = newExpirationTime;
     // 保存新的state
+    // newState.element === update.payload.element
     workInProgress.memoizedState = newState;
   }
 

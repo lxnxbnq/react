@@ -237,6 +237,7 @@ export function updateContainer(
     onScheduleRoot(container, element);
   }
   // current 在ReactFiberRoot.js -> createFiberRoot ->  createHostRootFiber(tag:3)生成
+  // RootFiber
   const current = container.current;
   // 记录当前时间
   // MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0)

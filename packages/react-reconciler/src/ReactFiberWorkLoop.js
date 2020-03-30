@@ -1544,6 +1544,7 @@ function workLoopSync() {
   // Already timed out, so perform work without checking if we need to yield.
   // 直到没有fiber任务需要执行
   // workInProgress记录当前执行fiber
+  // workInProgress === fiber.alternate，且大多数的属性是在当前fiber上复制的
   while (workInProgress !== null) {
     // performUnitOfWork函数的主要目的就是执行Fiber的单链表结构
     workInProgress = performUnitOfWork(workInProgress);
@@ -1610,7 +1611,7 @@ function performUnitOfWork(unitOfWork: Fiber): Fiber | null {
   // nothing should rely on this, but relying on it here means that we don't
   // need an additional field on the work in progress.
   // fiber的current, flushed, state是备用状态。 理想情况下，没有人应该依赖此，但是这里依赖它意味着我们在进行中的工作中不需要一个额外的字段。
-  // 在备用的fiber操作
+  // unitOfWork就是workInProgress ， unitOfWork.alternate = current , current.alternate = unitOfWork;
   const current = unitOfWork.alternate;
 
   // 开发环境中运行
