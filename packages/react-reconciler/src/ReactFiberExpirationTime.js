@@ -40,6 +40,7 @@ export const ContinuousHydration = 3;
 export const Sync = MAX_SIGNED_31_BIT_INT; // 代表同步执行，不会被调度也不会被打断
 export const Batched = Sync - 1; // 批处理
 
+// 用10ms作为一个unit表示抹平10ms的expirationTime差异，即在10ms内的update为相同的expirationtime，已达到批量更新的目的
 const UNIT_SIZE = 10;
 const MAGIC_NUMBER_OFFSET = Batched - 1;
 

@@ -846,6 +846,7 @@ function updateClassComponent(
     shouldUpdate = true;
   } else if (current === null) {
     // In a resume, we'll already have an instance we can reuse.
+    // 已经有一个实例
     shouldUpdate = resumeMountClassInstance(
       workInProgress,
       Component,
@@ -1010,7 +1011,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   cloneUpdateQueue(current, workInProgress);
   // 处理更新队列 setState，在这里会将虚拟DOM保存到当前工作fiber的memoizedState中
   processUpdateQueue(workInProgress, nextProps, null, renderExpirationTime);
-  // nextState.element === workInprogress.updateQueue.shared.pending.payload.element
+  // nextState.element === workInProgress.memoizedState.element
   const nextState = workInProgress.memoizedState;
   // Caution: React DevTools currently depends on this property
   // being called "element".
@@ -1057,7 +1058,7 @@ function updateHostRoot(current, workInProgress, renderExpirationTime) {
   } else {
     // Otherwise reset hydration state in case we aborted and resumed another
     // root.
-    // 调和子节点，进行同层diff对比
+    // 调和子节点，进行同层diff对比，并且初始化会根据虚拟DOM(nextChildren)创建workInProgress.child节点，并将child.return指向workInProgress
     reconcileChildren(
       current,
       workInProgress,

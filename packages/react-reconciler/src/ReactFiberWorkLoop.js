@@ -199,13 +199,13 @@ const {
 
 type ExecutionContext = number;
 
-const NoContext = /*                    */ 0b000000; // 0
-const BatchedContext = /*               */ 0b000001; // 1
-const EventContext = /*                 */ 0b000010; // 2
+const NoContext = /*     未入栈         */ 0b000000; // 0
+const BatchedContext = /*批量更新       */ 0b000001; // 1
+const EventContext = /*   事件          */ 0b000010; // 2
 const DiscreteEventContext = /*         */ 0b000100; // 4
-const LegacyUnbatchedContext = /*       */ 0b001000; // 8
-const RenderContext = /*                */ 0b010000; // 16
-const CommitContext = /*                */ 0b100000; // 32
+const LegacyUnbatchedContext = /*不批量更新*/ 0b001000; // 8
+const RenderContext = /*   渲染上下文    */ 0b010000; // 16
+const CommitContext = /*   工作提交      */ 0b100000; // 32
 
 type RootExitStatus = 0 | 1 | 2 | 3 | 4 | 5;
 const RootIncomplete = 0;
@@ -223,6 +223,7 @@ export type Thenable = {
 };
 
 // Describes where we are in the React execution stack
+// 描述我们在React执行栈中的位置
 let executionContext: ExecutionContext = NoContext;
 // The root we're working on
 let workInProgressRoot: FiberRoot | null = null;
@@ -316,6 +317,8 @@ export function requestCurrentTimeForUpdate() {
   // This is the first update since React yielded. Compute a new start time.
   // 在react产生后的首次更新，计算一个新的开始时间，并且更新全局变量currentEventTime
   // MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0)
+  // now()返回一个performance.now()或者Date.now()，根据浏览器兼容情况选择
+  // 该值表示为从time origin（文档的生命周期的开始的标准时间）之后到当前调用时经过的时间。Date.now() - performance.timeOrigin
   currentEventTime = msToExpirationTime(now());
   return currentEventTime;
 }
@@ -1733,8 +1736,8 @@ function completeUnitOfWork(unitOfWork: Fiber): Fiber | null {
       const next = unwindWork(workInProgress, renderExpirationTime);
 
       // Because this fiber did not complete, don't reset its expiration time.
-
       if (
+
         enableProfilerTimer &&
         (workInProgress.mode & ProfileMode) !== NoMode
       ) {

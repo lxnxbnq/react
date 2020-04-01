@@ -526,6 +526,7 @@ function adoptClassInstance(workInProgress: Fiber, instance: any): void {
   instance.updater = classComponentUpdater;
   workInProgress.stateNode = instance;
   // The instance needs access to the fiber so that it can schedule updates
+  // 类组件的每个实例都有一个 _reactInternalFiber 和 workInProgress 挂钩
   setInstance(instance, workInProgress);
   if (__DEV__) {
     instance._reactInternalInstance = fakeInternalInstance;
@@ -827,6 +828,7 @@ function mountClassInstance(
 
   const getDerivedStateFromProps = ctor.getDerivedStateFromProps;
   if (typeof getDerivedStateFromProps === 'function') {
+    // 执行getDerivedStateFromProps钩子函数
     applyDerivedStateFromProps(
       workInProgress,
       ctor,
@@ -844,6 +846,7 @@ function mountClassInstance(
     (typeof instance.UNSAFE_componentWillMount === 'function' ||
       typeof instance.componentWillMount === 'function')
   ) {
+    // 执行componentWillMount钩子
     callComponentWillMount(workInProgress, instance);
     // If we had additional state updates during this life-cycle, let's
     // process them now.
@@ -857,6 +860,7 @@ function mountClassInstance(
   }
 
   if (typeof instance.componentDidMount === 'function') {
+    // 更改fiber的effectTag为Update
     workInProgress.effectTag |= Update;
   }
 }
