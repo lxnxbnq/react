@@ -55,7 +55,8 @@ export function msToExpirationTime(ms: number): ExpirationTime {
 export function expirationTimeToMs(expirationTime: ExpirationTime): number {
   return (MAGIC_NUMBER_OFFSET - expirationTime) * UNIT_SIZE;
 }
-
+// ceiling的作用是向上取整，间隔在precision内的两个num最终得到的相同的值。 
+// 如果precision为25，则50和66转换后的到期时间都是75
 function ceiling(num: number, precision: number): number {
   return (((num / precision) | 0) + 1) * precision;
 }
@@ -76,6 +77,8 @@ function computeExpirationBucket(
 
 // TODO: This corresponds to Scheduler's NormalPriority, not LowPriority. Update
 // the names to reflect.
+// LOW_PRIORITY_EXPIRATION 的值是 5000，HIGH_PRIORITY_EXPIRATION 的值 是500
+// 这两个值会被 currentTime 减去，也就是说，低优先级的expirationTime 小了很多。
 export const LOW_PRIORITY_EXPIRATION = 5000;
 export const LOW_PRIORITY_BATCH_SIZE = 250;
 
@@ -113,6 +116,8 @@ export function computeSuspenseExpiration(
 // In production we opt for better UX at the risk of masking scheduling
 // problems, by expiring fast.
 export const HIGH_PRIORITY_EXPIRATION = __DEV__ ? 500 : 150;
+// HIGH_PRIORITY_BATCH_SIZE 的值是 100， LOW_PRIORITY_BATCH_SIZE 的值 是250，
+// 也就是说， 低优先级下，250ms以内的更新会得出同一个值，而在高优先级下则是100ms。
 export const HIGH_PRIORITY_BATCH_SIZE = 100;
 
 export function computeInteractiveExpiration(currentTime: ExpirationTime) {

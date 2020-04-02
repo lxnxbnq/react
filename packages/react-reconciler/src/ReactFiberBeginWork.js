@@ -862,6 +862,7 @@ function updateClassComponent(
       renderExpirationTime,
     );
   }
+  // 结束 初始化/更新阶段，执行render方法
   const nextUnitOfWork = finishClassComponent(
     current,
     workInProgress,
@@ -961,6 +962,7 @@ function finishClassComponent(
       renderExpirationTime,
     );
   } else {
+    // 执行子节点diff
     reconcileChildren(
       current,
       workInProgress,

@@ -108,7 +108,7 @@ import invariant from 'shared/invariant';
 import {getCurrentPriorityLevel} from './SchedulerWithReactIntegration';
 
 export type Update<State> = {|
-  // 更新的过期时间
+  // expirationTime越大，则当前任务优先级越高
   expirationTime: ExpirationTime,
   suspenseConfig: null | SuspenseConfig,
 

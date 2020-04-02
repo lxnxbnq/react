@@ -617,6 +617,7 @@ function commitLifeCycles(
           ) {
             try {
               startLayoutEffectTimer();
+              // 执行componentDidMount钩子函数
               instance.componentDidMount();
             } finally {
               recordLayoutEffectDuration(finishedWork);

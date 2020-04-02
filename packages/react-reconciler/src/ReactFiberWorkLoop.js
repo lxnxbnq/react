@@ -304,7 +304,7 @@ export function requestCurrentTimeForUpdate() {
   // 初始化时，executionContext为LegacyUnbatchedContext
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // We're inside React, so it's fine to read the actual time.
-    // 在react中
+    // 在 render 和 commit 阶段我们直接获取当前真实时间。
     return msToExpirationTime(now());
   }
   // We're not inside React, so we may be in the middle of a browser event.
@@ -315,7 +315,7 @@ export function requestCurrentTimeForUpdate() {
     return currentEventTime;
   }
   // This is the first update since React yielded. Compute a new start time.
-  // 在react产生后的首次更新，计算一个新的开始时间，并且更新全局变量currentEventTime
+  // 如果没有任务我们计算一个新的 currentEventTime 并赋给全局变量。
   // MAGIC_NUMBER_OFFSET - ((ms / UNIT_SIZE) | 0)
   // now()返回一个performance.now()或者Date.now()，根据浏览器兼容情况选择
   // 该值表示为从time origin（文档的生命周期的开始的标准时间）之后到当前调用时经过的时间。Date.now() - performance.timeOrigin
@@ -326,29 +326,40 @@ export function requestCurrentTimeForUpdate() {
 export function getCurrentTime() {
   return msToExpirationTime(now());
 }
-
+// 在同步模式下，直接返回Sync，也就是会将变化直接更新到界面上。
+// 在并行模式下，会根据调度器的优先级来决定过期时间，
+// 高优先级的，比如页面交互事件引起的更新，会执行 computeInteractiveExpiration ，
+// 而一般的更新，执行 computeAsyncExpiration 。
 export function computeExpirationForFiber(
   currentTime: ExpirationTime,
   fiber: Fiber,
   suspenseConfig: null | SuspenseConfig,
 ): ExpirationTime {
   // mode首次为LegacyNode
+  // 如果 fiber.mode 不包含 BlockingMode ，直接返回 Sync
+  // 结合 mode 赋值的代码看，其实就是判断 是否是 NoMode，如果是，那就是同步渲染机制
   const mode = fiber.mode;
   if ((mode & BlockingMode) === NoMode) {
     // 首次进入这里
     return Sync;
   }
   // 获取当前调度任务的优先级，默认为97，在scheduler/src/SchedulerPriorites.js中
+  // 由于上面判断了不是 NoMode，这里其实是判断是否是 BatchedMode
+  // 如果是 BatchedMode， 判断 priorityLevel
+  // priorityLevel 是 ImmediatePriority ， 返回 Sync，否则返回 Batched
   const priorityLevel = getCurrentPriorityLevel();
   if ((mode & ConcurrentMode) === NoMode) {
     return priorityLevel === ImmediatePriority ? Sync : Batched;
   }
 
+ // 下面全是处理 Concurrent Mode 的代码
+
+  // 如果 executionContext 是 RenderContext ，也就是处于 Render阶段
+  // 返回之前的 renderExpirationTime (这个字段后续会涉及到)
   if ((executionContext & RenderContext) !== NoContext) {
     // Use whatever time we're already rendering
-    // 使用我们已经渲染的任何时间
+    // 组件正在渲染中
     // TODO: Should there be a way to opt out, like with `runWithPriority`?
-    // 是否应该有一种选择退出的方式，例如`runWithPriority`？
     return renderExpirationTime;
   }
 
@@ -361,17 +372,20 @@ export function computeExpirationForFiber(
     );
   } else {
     // Compute an expiration time based on the Scheduler priority.
-    // 根据调度程序优先级计算到期时间。
+    // 根据Scheduler优先级计算过期时间。
     switch (priorityLevel) {
       case ImmediatePriority:
-        expirationTime = Sync;
+        // 在同步模式下，直接返回Sync，也就是会将变化直接更新到界面上。
+        expirationTime = Sync; // MAX_SIGNED_31_BIT_INT
         break;
       case UserBlockingPriority:
+        // 高优先级的，比如页面交互事件引起的更新，会执行 computeInteractiveExpiration ，
         // TODO: Rename this to computeUserBlockingExpiration
         expirationTime = computeInteractiveExpiration(currentTime);
         break;
       case NormalPriority:
       case LowPriority: // TODO: Handle LowPriority
+        // 而一般的更新，执行 computeAsyncExpiration 。
         // TODO: Rename this to... something better.
         expirationTime = computeAsyncExpiration(currentTime);
         break;
@@ -388,6 +402,8 @@ export function computeExpirationForFiber(
   // TODO: We shouldn't have to do this if the update is on a different root.
   // Refactor computeExpirationForFiber + scheduleUpdate so we have access to
   // the root when we check for this condition.
+  // 如果我们正在进行渲染，workInProgressRoot指的是FiberRoot
+  // 且计算出的过期时间和 render 阶段的过期时间一样，那么将此次更新的优先级降低
   if (workInProgressRoot !== null && expirationTime === renderExpirationTime) {
     // This is a trick to move this update into a separate batch
     expirationTime -= 1;
@@ -422,8 +438,7 @@ export function scheduleUpdateOnFiber(
   
   const priorityLevel = getCurrentPriorityLevel();
   //1073741823 === Math.pow(2, 30) - 1
-  //如果expirationTime等于最大整型值的话
-  //如果是同步任务的过期时间的话
+  //同步任务
   if (expirationTime === Sync) {
     // 如果还未渲染，update是未分批次的，
     // 首次渲染前
@@ -1866,6 +1881,7 @@ function resetChildExpirationTime(completedWork: Fiber) {
 
 function commitRoot(root) {
   const renderPriorityLevel = getCurrentPriorityLevel();
+  // 执行调度任务
   runWithPriority(
     ImmediatePriority,
     commitRootImpl.bind(null, root, renderPriorityLevel),
@@ -1982,6 +1998,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // 执行 `getSnapshotBeforeUpdate`
           commitBeforeMutationEffects();
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
@@ -2057,6 +2074,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // 执行已经布局完成的副作用函数，如: componentDidMount
           commitLayoutEffects(root, expirationTime);
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
