@@ -330,7 +330,7 @@ function FiberNode(
   this.mode = mode;
 
   // Effects
-  this.effectTag = NoEffect; // 记录当前的DOM操作
+  this.effectTag = NoEffect; // 记录当前的DOM操作，当为类组件时，effectTag表示的是当前组件正处于哪一个带有副作用的生命周期内
   this.nextEffect = null; // 用于commit阶段记录firstEffect -> lastEffect链遍历过程中的每一个Fiber
 
   this.firstEffect = null;// 子树中第一个side effec

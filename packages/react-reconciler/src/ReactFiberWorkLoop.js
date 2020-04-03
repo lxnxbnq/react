@@ -477,7 +477,7 @@ export function scheduleUpdateOnFiber(
         // 故意将其放在scheduleUpdateOnFiber而不是scheduleCallbackForFiber内，以保留调度回调而不立即刷新它的能力
         // 我们仅对用户启动的更新执行此操作，以保留旧版模式的历史行为。
 
-        // 刷新同步任务队列
+        // 执行同步任务队列
         flushSyncCallbackQueue();
       }
     }

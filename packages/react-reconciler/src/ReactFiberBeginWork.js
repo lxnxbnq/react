@@ -905,7 +905,7 @@ function finishClassComponent(
     if (hasContext) {
       invalidateContextProvider(workInProgress, Component, false);
     }
-
+    // 当用户声明的shouldComponentUpdate经过执行，返回false后，且未发生异常的情况下，会直接跳过render
     return bailoutOnAlreadyFinishedWork(
       current,
       workInProgress,

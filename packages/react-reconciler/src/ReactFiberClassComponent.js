@@ -524,7 +524,7 @@ function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: any) {
 // 在初始化时，当遇到的Fiber 的tag是一个类组件时，会给实例增加一个updater，这个updater就是调用setState时触发的函数
 function adoptClassInstance(workInProgress: Fiber, instance: any): void {
   instance.updater = classComponentUpdater;
-  workInProgress.stateNode = instance;
+  workInProgress.stateNode = instance; // stateNode就表示当前的组件的实例
   // The instance needs access to the fiber so that it can schedule updates
   // 类组件的每个实例都有一个 _reactInternalFiber 和 workInProgress 挂钩
   setInstance(instance, workInProgress);
@@ -1044,6 +1044,7 @@ function updateClassInstance(
     (typeof instance.UNSAFE_componentWillReceiveProps === 'function' ||
       typeof instance.componentWillReceiveProps === 'function')
   ) {
+    // 兼容旧的UNSAFE_componentWillReceiveProps/componentWillReceiveProps生命周期
     if (oldProps !== newProps || oldContext !== nextContext) {
       callComponentWillReceiveProps(
         workInProgress,

@@ -153,6 +153,7 @@ export function scheduleCallback(
   return Scheduler_scheduleCallback(priorityLevel, callback, options);
 }
 
+// 调度同步回调队列
 export function scheduleSyncCallback(callback: SchedulerCallback) {
   // Push this callback into an internal queue. We'll flush these either in
   // the next tick, or earlier if something calls `flushSyncCallbackQueue`.
@@ -186,6 +187,7 @@ export function flushSyncCallbackQueue() {
   flushSyncCallbackQueueImpl();
 }
 
+// 执行同步更新队列
 function flushSyncCallbackQueueImpl() {
   if (!isFlushingSyncQueue && syncQueue !== null) {
     // Prevent re-entrancy.
