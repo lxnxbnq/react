@@ -396,6 +396,8 @@ export function renderWithHooks<Props, SecondArg>(
       ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
     }
   } else {
+    //将当前的fiber任务赋值给全局变量currentlyRenderingFiber.current中，以便在hook中获取到
+    // 初始化则使用HooksDispatcherOnMount中的hooks方法，更新则使用HooksDispatcherOnUpdate中的hooks方法
     ReactCurrentDispatcher.current =
       current === null || current.memoizedState === null
         ? HooksDispatcherOnMount
@@ -1101,6 +1103,7 @@ const updateDebugValue = mountDebugValue;
 function mountCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
+  // 初始化时记录callback和deps
   hook.memoizedState = [callback, nextDeps];
   return callback;
 }
@@ -1112,6 +1115,7 @@ function updateCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
   if (prevState !== null) {
     if (nextDeps !== null) {
       const prevDeps: Array<mixed> | null = prevState[1];
+      // 组件发生更新时对比依赖，如果依赖未改变，则使用旧的callback
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         return prevState[0];
       }
@@ -1128,6 +1132,7 @@ function mountMemo<T>(
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
   const nextValue = nextCreate();
+  // 初始化时，将useMeme中的callback的值和依赖缓存到内存中
   hook.memoizedState = [nextValue, nextDeps];
   return nextValue;
 }
@@ -1142,6 +1147,8 @@ function updateMemo<T>(
   if (prevState !== null) {
     // Assume these are defined. If they're not, areHookInputsEqual will warn.
     if (nextDeps !== null) {
+      // 组件发生更新时，判断传入的依赖项是否已经更改，如果未更改，则使用缓存中的值
+      // 浅对比
       const prevDeps: Array<mixed> | null = prevState[1];
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         return prevState[0];
