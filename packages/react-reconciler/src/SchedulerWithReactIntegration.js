@@ -79,6 +79,7 @@ let isFlushingSyncQueue: boolean = false;
 // };
 // 
 // Scheduler_now === unstable_now
+// 程序初始化时间
 let initialTimeMs: number = Scheduler_now();
 
 // If the initial timestamp is reasonably small, use Scheduler's `now` directly.
@@ -93,6 +94,7 @@ let initialTimeMs: number = Scheduler_now();
 // 在这种情况下，请减去模块初始化时间以模拟performance.now的行为，并使我们的时间保持足够小以适合32 bits。
 // TODO: Consider lifting this into Scheduler.
 // 考虑将其提升到Scheduler中。
+// 当程序初始化时间小于10000毫秒，则就调用Scheduler_now计算当前时间到程序初始化的时间差，否则，重新调用Scheduler_now计算当前时间到程序初始化的时间再减去程序初始化时间
 export const now =
   initialTimeMs < 10000 ? Scheduler_now : () => Scheduler_now() - initialTimeMs;
 

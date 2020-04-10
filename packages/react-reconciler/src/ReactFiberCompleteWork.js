@@ -777,6 +777,8 @@ current: Fiber | null,
           // Certain renderers require commit-time effects for initial mount.
           // (eg DOM renderer supports auto-focus for certain elements).
           // Make sure such renderers get scheduled for later work.
+          // 某些渲染器需要提交时效果才能进行初始安装。 （例如DOM渲染器支持某些元素的自动聚焦）。确保安排此类渲染器用于以后的工作。
+          // 完成fiber任务后初始化节点中的属性，并且会注册自定义的事件
           if (
             finalizeInitialChildren(
               instance,
