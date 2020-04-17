@@ -446,6 +446,7 @@ export function scheduleUpdateOnFiber(
       // Check if we're inside unbatchedUpdates
       // 检查我们是否在未批处理的更新内
       // 已经在 unbatchedUpdates 中更改了当前执行栈
+      // 首次不进行批处理
       (executionContext & LegacyUnbatchedContext) !== NoContext &&
       // Check if we're not already rendering
       // 检查我们是否尚未渲染
@@ -464,6 +465,7 @@ export function scheduleUpdateOnFiber(
       // 执行RootFiber的同步工作
       performSyncWorkOnRoot(root);
     } else {
+      // 当调用setState或者useState中的方法时，会进入到这里
       ensureRootIsScheduled(root);
       schedulePendingInteractions(root, expirationTime);
       // 当前没有update时
@@ -487,6 +489,7 @@ export function scheduleUpdateOnFiber(
   }
 
   if (
+    // 用户触发某些事件时
     (executionContext & DiscreteEventContext) !== NoContext &&
     // Only updates at user-blocking priority or greater are considered
     // discrete, even inside a discrete event.
@@ -726,6 +729,7 @@ function ensureRootIsScheduled(root: FiberRoot) {
 function performConcurrentWorkOnRoot(root, didTimeout) {
   // Since we know we're in a React event, we can clear the current
   // event time. The next update will compute a new event time.
+  // 由于我们知道我们处于React事件中，因此我们可以清除当前事件时间。下次更新将计算新的事件时间。
   currentEventTime = NoWork;
 
   // Check if the render expired.
@@ -1087,7 +1091,6 @@ function performSyncWorkOnRoot(root) {
   root.finishedExpirationTime = expirationTime;
 
   // 提交FiberRootNode
-  // TODO: 节点
   commitRoot(root);
 
   // Before exiting, make sure there's a callback scheduled for the next
@@ -2089,6 +2092,7 @@ function commitRootImpl(root, renderPriorityLevel) {
 
     // Tell Scheduler to yield at the end of the frame, so the browser has an
     // opportunity to paint.
+    // 告诉Scheduler在帧末尾屈服，因此浏览器有一个绘画的机会。
     requestPaint();
 
     if (enableSchedulerTracing) {
@@ -2316,6 +2320,7 @@ function commitLayoutEffects(
   committedExpirationTime: ExpirationTime,
 ) {
   // TODO: Should probably move the bulk of this function to commitWork.
+  // 根据fiber结构，按顺序执行带有副作用的生命周期
   while (nextEffect !== null) {
     setCurrentDebugFiberInDEV(nextEffect);
 

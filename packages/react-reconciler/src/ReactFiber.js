@@ -139,6 +139,30 @@ export type Fiber = {|
 
   // Tag identifying the type of fiber.
   // 标记不同的组件类型
+  // export const FunctionComponent = 0;
+  // export const ClassComponent = 1;
+  // // 不确定的Component
+  // export const IndeterminateComponent = 2; // Before we know whether it is function or class // 在我们知道它是函数还是类之前
+  // export const HostRoot = 3; // Root of a host tree. Could be nested inside another node.宿主树的根。可以嵌套在另一个节点内。
+  // export const HostPortal = 4; // A subtree. Could be an entry point to a different renderer.
+  // export const HostComponent = 5;
+  // export const HostText = 6;
+  // export const Fragment = 7;
+  // export const Mode = 8;
+  // export const ContextConsumer = 9;
+  // export const ContextProvider = 10;
+  // export const ForwardRef = 11;
+  // export const Profiler = 12;
+  // export const SuspenseComponent = 13;
+  // export const MemoComponent = 14;
+  // export const SimpleMemoComponent = 15;
+  // export const LazyComponent = 16;
+  // export const IncompleteClassComponent = 17;
+  // export const DehydratedFragment = 18;
+  // export const SuspenseListComponent = 19;
+  // export const FundamentalComponent = 20;
+  // export const ScopeComponent = 21;
+  // export const Block = 22;
   tag: WorkTag,
 
   // Unique identifier of this child.
@@ -158,6 +182,7 @@ export type Fiber = {|
   // 跟当前Fiber相关本地状态，比如：
   // 1.浏览器环境就是DOM节点
   // 2.类组件就是state
+  // 当前组件实例的引用
   stateNode: any,
 
   // Conceptual aliases
@@ -215,10 +240,20 @@ export type Fiber = {|
   // Fiber被创建的时候他会继承父Fiber
   // 其他的标识也可以在创建的时候被设置
   // 但是在创建之后不应该再被修改，特别是他的子Fiber创建之前
+
+  // 用来描述fiber是处于何种模式。用二进制位来表示（bitfield），
+  // 后面通过与来看两者是否相同//这个字段其实是一个数字.
+  // export const NoMode = 0b0000;
+  // export const StrictMode = 0b0001;
+  // // TODO: Remove BlockingMode and ConcurrentMode by reading from the root
+  // // tag instead
+  // export const BlockingMode = 0b0010;
+  // export const ConcurrentMode = 0b0100;
+  // export const ProfileMode = 0b1000;
   mode: TypeOfMode,
 
   // Effect
-  // 用来记录Side Effect（DOM操作）
+  // 用来记录Side Effect具体的执行的工作的类型：比如Placement，Update等等
   effectTag: SideEffectTag,
 
   // Singly linked list fast path to the next fiber with side-effects.
@@ -237,6 +272,8 @@ export type Fiber = {|
   // Does not include work found in its subtree.
   // 代表任务在未来的哪个时间点应该被完成
   // 不包括他的子树产生的任务
+  // 通过这个参数也可以知道是否还有等待暂停的变更、没有完成变更。
+  // 这个参数一般是UpdateQueue中最长过期时间的Update相同，如果有Update的话。
   expirationTime: ExpirationTime,
 
   // This is used to quickly determine if a subtree has no pending changes.

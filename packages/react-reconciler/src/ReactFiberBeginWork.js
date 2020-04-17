@@ -236,11 +236,11 @@ export function reconcileChildren(
 
     // If we had any progressed work already, that is invalid at this point so
     // let's throw it out.
-    // 这里的 reconcileChildFibers需要在开发环境中才能生成
+    // 协调子节点fiber
     workInProgress.child = reconcileChildFibers(
-      workInProgress,
+      workInProgress, // 工作fiber
       current.child,
-      nextChildren,
+      nextChildren, // props中的children，虚拟DOM
       renderExpirationTime,
     );
   }
